@@ -34,3 +34,9 @@ Make sure your token has the correct permissions.
 2025-07-31 14:32:20,470 - ai_agent.agent - INFO - Analysis: {'files_modified': ['fastapi/dependencies/utils.py', 'tests/test_union_forms.py'], 'functions_added': [('is_union_of_base_models', 'fastapi/dependencies/utils.py'), ('post_union_form', 'tests/test_union_forms.py'), ('test_post_user_form', 'tests/test_union_forms.py'), ('test_post_company_form', 'tests/test_union_forms.py'), ('test_invalid_form_data', 'tests/test_union_forms.py'), ('test_empty_form', 'tests/test_union_forms.py'), ('test_openapi_schema', 'tests/test_union_forms.py')], 'functions_modified': [], 'functions_removed': [], 'total_lines_added': 180, 'total_lines_removed': 3}
 2025-07-31 14:32:20,483 - ai_agent.agent - INFO - Found 7 functions in diff
 2025-07-31 14:32:20,484 - ai_agent.agent - INFO - Processing function: is_union_of_base_models
+2025-08-01 16:06:03,036 - root - INFO - Loading CodeLlama model: codellama/CodeLlama-7b-Instruct-hf
+2025-08-01 16:08:52,625 - root - INFO - Model loaded successfully
+2025-08-01 16:08:54,665 - ai_agent.agent - INFO - Processing diff file: data\PR_13827\diff.patch
+2025-08-01 16:08:54,677 - ai_agent.agent - INFO - Analysis: {'files_modified': ['fastapi/dependencies/utils.py', 'tests/test_union_forms.py'], 'functions_added': [('is_union_of_base_models', 'fastapi/dependencies/utils.py'), ('post_union_form', 'tests/test_union_forms.py'), ('test_post_user_form', 'tests/test_union_forms.py'), ('test_post_company_form', 'tests/test_union_forms.py'), ('test_invalid_form_data', 'tests/test_union_forms.py'), ('test_empty_form', 'tests/test_union_forms.py'), ('test_openapi_schema', 'tests/test_union_forms.py')], 'functions_modified': [], 'functions_removed': [], 'total_lines_added': 180, 'total_lines_removed': 3}
+2025-08-01 16:08:54,685 - ai_agent.agent - INFO - Found 7 functions in diff
+2025-08-01 16:08:54,687 - ai_agent.agent - INFO - Processing function: is_union_of_base_models
