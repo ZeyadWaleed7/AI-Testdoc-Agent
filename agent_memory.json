@@ -5,12 +5,12 @@
       "file_path": "fastapi/dependencies/utils.py",
       "diff_context": "diff --git a/fastapi/dependencies/utils.py b/fastapi/dependencies/utils.py\nindex 84dfa4d0306a6..081b63a8bdcef 100644\n--- a/fastapi/dependencies/utils.py\n+++ b/fastapi/dependencies/utils.py\n@@ -816,6 +816,25 @@ def request_params_to_args(\n     return values, errors\n \n \n+def is_union_of_base_models(field_type: Any) -> bool:\n+    \"\"\"Check if field type is a Union where all members are BaseModel subclasses.\"\"\"\n+    from fastapi.types import UnionType\n+\n+    origin = get_origin(field_type)\n+\n+    # Check if it's a Union type (covers both typing.Union and types.UnionType in Python 3.10+)\n+    if origin is not Union and origin is not UnionType:\n+        return False\n+\n+    union_args = get_args(field_type)\n+\n+    for arg in union_args:\n+        if not lenient_issubclass(arg, BaseModel):\n+            return False\n+\n+    return True\n+\n+\n def _should_embed_body_fields(fields: List[ModelField]) -> bool:\n     if not fields:\n         return False\n@@ -829,10 +848,12 @@ def _should_embed_body_fields(",
       "module_context": "",
-      "last_updated": "2025-07-31T14:32:20.485614",
-      "usage_count": 3
+      "created_at": "2025-08-01T16:08:54.689257",
+      "last_accessed": "2025-08-01T16:08:54.691203"
     }
   },
   "diff_patterns": {},
   "coverage_gaps": {},
   "prompt_effectiveness": {},
-  "last_updated": "2025-07-31T14:32:20.487613"
+  "last_updated": "2025-08-01T16:08:54.692196"
 }
