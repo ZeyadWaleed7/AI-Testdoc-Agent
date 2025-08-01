@@ -6,22 +6,93 @@ class PromptTemplates:
     @staticmethod
     def naive_prompt(function_code: str) -> str:
         """Simple naive prompt for test generation."""
-        return 
+        return f"""Write a comprehensive unit test for this function:
+
+{function_code}
+
+Please include:
+- Test cases for normal operation
+- Edge cases
+- Error conditions
+- Clear test names and descriptions"""
 
 
     @staticmethod
     def diff_aware_prompt(function_code: str, diff_context: str) -> str:
         """Diff-aware prompt that includes context about what changed."""
-        return 
+        return f"""Write a comprehensive unit test for this function. 
+Here's the function code:
+{function_code}
+
+Here's what changed in the diff:
+{diff_context}
+
+Please write tests that:
+- Cover the new functionality added in the diff
+- Test the specific changes made
+- Include edge cases related to the modifications
+- Ensure backward compatibility if applicable
+- Test error conditions that might arise from the changes"""
     
 
 
     @staticmethod
     def few_shot_prompt(function_code: str, examples: List[Dict[str, str]] = None) -> str:
         """Few-shot prompt with examples."""
+        if not examples:
+            examples = [
+                {
+                    "function": """def add(a: int, b: int) -> int:
+    return a + b""",
+                    "test": """def test_add():
+    # Test normal operation
+    assert add(2, 3) == 5
+    assert add(-1, 1) == 0
+    
+    # Test edge cases
+    assert add(0, 0) == 0
+    assert add(1000000, 1000000) == 2000000
+    
+    # Test with negative numbers
+    assert add(-5, -3) == -8"""
+                },
+                {
+                    "function": """def validate_email(email: str) -> bool:
+    import re
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email))""",
+                    "test": """def test_validate_email():
+    # Test valid emails
+    assert validate_email("user@example.com") == True
+    assert validate_email("test.email+tag@domain.co.uk") == True
+    
+    # Test invalid emails
+    assert validate_email("invalid-email") == False
+    assert validate_email("@domain.com") == False
+    assert validate_email("user@") == False
+    assert validate_email("") == False"""
+                }
+            ]
         
+        examples_text = ""
+        for i, example in enumerate(examples, 1):
+            examples_text += f"""
+Example {i}:
+Function:
+{example['function']}
+
+Test:
+{example['test']}
+"""
         
-        return 
+        return f"""Here are some examples of functions and their tests:
+
+{examples_text}
+
+Now write a comprehensive test for this function:
+{function_code}
+
+Follow the same pattern as the examples above."""
 
 
 
@@ -31,7 +102,18 @@ class PromptTemplates:
     @staticmethod
     def chain_of_thought_prompt(function_code: str) -> str:
         """Chain of thought prompt that encourages step-by-step analysis."""
-        return 
+        return f"""Analyze this function step by step and then write comprehensive unit tests.
+
+Function:
+{function_code}
+
+Step 1: What are the inputs and their types?
+Step 2: What is the expected output?
+Step 3: What edge cases should be tested?
+Step 4: What error conditions might occur?
+Step 5: What are the different code paths that need coverage?
+
+Now write comprehensive unit tests based on your analysis above."""
 
 
 
@@ -39,7 +121,17 @@ class PromptTemplates:
     @staticmethod
     def tdd_prompt(function_spec: str) -> str:
         """Test-driven development prompt."""
-        return 
+        return f"""Write unit tests for this function specification before the implementation:
+
+Function Specification:
+{function_spec}
+
+Please write tests that:
+- Define the expected behavior
+- Cover all requirements from the specification
+- Include edge cases and error conditions
+- Follow TDD principles (test first, then implement)
+- Use descriptive test names that explain the requirement being tested"""
 
 
 
@@ -47,7 +139,18 @@ class PromptTemplates:
     @staticmethod
     def documentation_prompt(function_code: str, function_name: str) -> str:
         """Prompt for generating documentation."""
-        return 
+        return  f"""Write comprehensive documentation for this function:
+
+{function_code}
+
+Please provide:
+1. Parameter descriptions with types and constraints
+2. Return value description with type and meaning
+3. Usage examples showing typical use cases
+4. Any important notes, warnings, or dependencies
+5. Edge cases and error conditions to be aware of
+
+Make the documentation clear, complete, and helpful for developers using this function."""
     
 
 
@@ -58,7 +161,20 @@ class PromptTemplates:
         for func in functions:
             functions_text += f"- `{func['name']}`: {func['description']}\n"
         
-        return 
+        return f"""Generate a README section for the {module_name} module.
+
+Functions in this module:
+{functions_text}
+
+Please provide:
+1. A brief overview of what this module does and its purpose
+2. Installation/usage instructions if relevant
+3. API documentation for each function with examples
+4. Common use cases and examples
+5. Any important notes, dependencies, or requirements
+6. Troubleshooting section if applicable
+
+Make it comprehensive and developer-friendly."""
     
 
 
