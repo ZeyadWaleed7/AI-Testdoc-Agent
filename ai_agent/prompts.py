@@ -1,11 +1,9 @@
 from typing import Dict, List, Any
 
 class PromptTemplates:
-    """Collection of prompt templates for different strategies."""
     
     @staticmethod
     def naive_prompt(function_code: str) -> str:
-        """Simple naive prompt for test generation."""
         return f"""Write a comprehensive unit test for this function:
 
 {function_code}
@@ -19,7 +17,6 @@ Please include:
 
     @staticmethod
     def diff_aware_prompt(function_code: str, diff_context: str) -> str:
-        """Diff-aware prompt that includes context about what changed."""
         return f"""Write a comprehensive unit test for this function. 
 Here's the function code:
 {function_code}
@@ -38,22 +35,18 @@ Please write tests that:
 
     @staticmethod
     def few_shot_prompt(function_code: str, examples: List[Dict[str, str]] = None) -> str:
-        """Few-shot prompt with examples."""
         if not examples:
             examples = [
                 {
                     "function": """def add(a: int, b: int) -> int:
     return a + b""",
                     "test": """def test_add():
-    # Test normal operation
     assert add(2, 3) == 5
     assert add(-1, 1) == 0
     
-    # Test edge cases
     assert add(0, 0) == 0
     assert add(1000000, 1000000) == 2000000
     
-    # Test with negative numbers
     assert add(-5, -3) == -8"""
                 },
                 {
@@ -62,11 +55,9 @@ Please write tests that:
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'
     return bool(re.match(pattern, email))""",
                     "test": """def test_validate_email():
-    # Test valid emails
     assert validate_email("user@example.com") == True
     assert validate_email("test.email+tag@domain.co.uk") == True
     
-    # Test invalid emails
     assert validate_email("invalid-email") == False
     assert validate_email("@domain.com") == False
     assert validate_email("user@") == False
@@ -98,10 +89,8 @@ Follow the same pattern as the examples above."""
 
 
 
-
     @staticmethod
     def chain_of_thought_prompt(function_code: str) -> str:
-        """Chain of thought prompt that encourages step-by-step analysis."""
         return f"""Analyze this function step by step and then write comprehensive unit tests.
 
 Function:
@@ -120,7 +109,6 @@ Now write comprehensive unit tests based on your analysis above."""
 
     @staticmethod
     def tdd_prompt(function_spec: str) -> str:
-        """Test-driven development prompt."""
         return f"""Write unit tests for this function specification before the implementation:
 
 Function Specification:
@@ -138,7 +126,6 @@ Please write tests that:
 
     @staticmethod
     def documentation_prompt(function_code: str, function_name: str) -> str:
-        """Prompt for generating documentation."""
         return  f"""Write comprehensive documentation for this function:
 
 {function_code}
@@ -156,7 +143,6 @@ Make the documentation clear, complete, and helpful for developers using this fu
 
     @staticmethod
     def readme_prompt(module_name: str, functions: List[Dict[str, str]]) -> str:
-        """Prompt for generating documentation."""
         functions_text = ""
         for func in functions:
             functions_text += f"- `{func['name']}`: {func['description']}\n"
@@ -180,7 +166,6 @@ Make it comprehensive and developer-friendly."""
 
 
 class PromptStrategy:
-    """Manages different prompting strategies."""
     
     def __init__(self):
         self.templates = PromptTemplates()
@@ -193,36 +178,15 @@ class PromptStrategy:
         }
     
     def get_prompt(self, strategy: str, **kwargs) -> str:
-        """
-        Get a prompt for the specified strategy.
-        
-        Args:
-            strategy: Name of the strategy
-            **kwargs: Arguments for the prompt template
-            
-        Returns:
-            Generated prompt text
-        """
         if strategy not in self.strategies:
             raise ValueError(f"Unknown strategy: {strategy}")
         
         return self.strategies[strategy](**kwargs)
     
     def get_all_strategies(self) -> List[str]:
-        """Get list of all available strategies."""
         return list(self.strategies.keys())
     
     def compare_strategies(self, function_code: str, diff_context: str = "") -> Dict[str, str]:
-        """
-        Generate prompts for all strategies for comparison.
-        
-        Args:
-            function_code: The function code
-            diff_context: Git diff context
-            
-        Returns:
-            Dictionary mapping strategy names to prompts
-        """
         prompts = {}
         
         for strategy in self.strategies:

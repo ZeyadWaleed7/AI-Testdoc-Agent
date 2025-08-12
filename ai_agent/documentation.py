@@ -6,22 +6,11 @@ import logging
 
 class DocumentationGenerator:
     def __init__(self, llm: PhindCodeLlamaLLM):
-        """Initialize documentation generator with LLM."""
         self.llm = llm
     
     def extract_functions_for_documentation(self, diff_content: str) -> List[Tuple[str, str, str]]:
-        """
-        Extract functions that need documentation from diff content.
-        
-        Args:
-            diff_content: Git diff content
-            
-        Returns:
-            List of tuples (function_name, function_code, file_path)
-        """
         functions = []
         
-        # Split diff into chunks
         diff_chunks = self._split_diff_into_chunks(diff_content)
         
         for chunk in diff_chunks:
@@ -30,7 +19,6 @@ class DocumentationGenerator:
             if not file_path.endswith('.py'):
                 continue
                 
-            # Extract function definitions from added lines
             for line_num, line in added_lines:
                 if line.strip().startswith('def ') or line.strip().startswith('async def '):
                     function_name = self._extract_function_name(line)
@@ -41,7 +29,6 @@ class DocumentationGenerator:
         return functions
     
     def _split_diff_into_chunks(self, diff_content: str) -> List[str]:
-        """Split diff content into individual file chunks."""
         chunks = []
         current_chunk = []
         
@@ -59,7 +46,6 @@ class DocumentationGenerator:
         return chunks
     
     def _parse_diff_chunk(self, chunk: str) -> Tuple[str, List[Tuple[int, str]], List[Tuple[int, str]]]:
-        """Parse a diff chunk to extract file path and line changes."""
         lines = chunk.split('\n')
         file_path = ""
         added_lines = []
@@ -67,7 +53,7 @@ class DocumentationGenerator:
         
         for line in lines:
             if line.startswith('+++ b/'):
-                file_path = line[6:]  # Remove '+++ b/' prefix
+                file_path = line[6:]
             elif line.startswith('+') and not line.startswith('+++'):
                 line_num = len(added_lines) + 1
                 added_lines.append((line_num, line[1:]))
@@ -78,12 +64,10 @@ class DocumentationGenerator:
         return file_path, added_lines, removed_lines
     
     def _extract_function_name(self, line: str) -> Optional[str]:
-        """Extract function name from function definition line."""
         match = re.match(r'^\s*(?:async\s+)?def\s+(\w+)\s*\(', line)
         return match.group(1) if match else None
     
     def _extract_function_code(self, added_lines: List[Tuple[int, str]], start_line: int) -> str:
-        """Extract complete function code from added lines."""
         function_lines = []
         indent_level = None
         
@@ -100,15 +84,6 @@ class DocumentationGenerator:
         return '\n'.join(function_lines)
     
     def generate_documentation_for_diff(self, diff_content: str) -> Dict[str, str]:
-        """
-        Generate documentation for all functions found in the diff.
-        
-        Args:
-            diff_content: Git diff content
-            
-        Returns:
-            Dictionary mapping function names to generated documentation
-        """
         functions = self.extract_functions_for_documentation(diff_content)
         generated_docs = {}
         
@@ -128,16 +103,6 @@ class DocumentationGenerator:
         return generated_docs
     
     def generate_documentation_for_function(self, function_code: str, function_name: str) -> str:
-        """
-        Generate documentation for a specific function.
-        
-        Args:
-            function_code: The function code
-            function_name: Name of the function
-            
-        Returns:
-            Generated documentation
-        """
         try:
             return self.llm.generate_documentation(
                 function_code=function_code,
@@ -148,34 +113,12 @@ class DocumentationGenerator:
             return f"# Error generating documentation: {str(e)}"
     
     def generate_documentation(self, function_code: str, function_name: str, diff_context: str = "") -> str:
-        """
-        Generate documentation for a specific function (compatibility method for agent.py).
-        
-        Args:
-            function_code: The function code
-            function_name: Name of the function
-            diff_context: Optional diff context (not used in current implementation)
-            
-        Returns:
-            Generated documentation
-        """
         return self.generate_documentation_for_function(function_code, function_name)
     
     def generate_readme_section(self, functions: List[Tuple[str, str]], module_name: str) -> str:
-        """
-        Generate a README section for a module with multiple functions.
-        
-        Args:
-            functions: List of (function_name, function_code) tuples
-            module_name: Name of the module
-            
-        Returns:
-            Generated README section
-        """
         try:
             function_summaries = []
             for func_name, func_code in functions:
-                # Extract first line of function for summary
                 lines = func_code.split('\n')
                 signature = lines[0] if lines else ""
                 function_summaries.append(f"- `{func_name}`: {signature}")
@@ -202,16 +145,6 @@ Please provide:
             return f"# Error generating README section: {str(e)}"
     
     def format_docstring(self, doc_content: str, style: str = "google") -> str:
-        """
-        Format documentation content into a proper docstring.
-        
-        Args:
-            doc_content: Raw documentation content from LLM
-            style: Docstring style ("google", "numpy", "sphinx")
-            
-        Returns:
-            Formatted docstring
-        """
         if style == "google":
             return self._format_google_docstring(doc_content)
         elif style == "numpy":
@@ -220,18 +153,15 @@ Please provide:
             return self._format_sphinx_docstring(doc_content)
     
     def _format_google_docstring(self, doc_content: str) -> str:
-        """Format documentation as Google-style docstring."""
         lines = doc_content.split('\n')
         formatted_lines = ['"""']
         
         for line in lines:
             line = line.strip()
             if line.startswith('1.') or line.startswith('2.') or line.startswith('3.') or line.startswith('4.') or line.startswith('5.'):
-                # Convert numbered lists to sections
                 section_name = line.split(':', 1)[1].strip() if ':' in line else line[2:].strip()
                 formatted_lines.append(f"\n{section_name}:")
             elif line.startswith('- '):
-                # Convert bullet points
                 formatted_lines.append(f"    {line[2:]}")
             elif line:
                 formatted_lines.append(line)
@@ -240,7 +170,6 @@ Please provide:
         return '\n'.join(formatted_lines)
     
     def _format_numpy_docstring(self, doc_content: str) -> str:
-        """Format documentation as NumPy-style docstring."""
         lines = doc_content.split('\n')
         formatted_lines = ['"""']
         
@@ -258,7 +187,6 @@ Please provide:
         return '\n'.join(formatted_lines)
     
     def _format_sphinx_docstring(self, doc_content: str) -> str:
-        """Format documentation as Sphinx-style docstring."""
         lines = doc_content.split('\n')
         formatted_lines = ['"""']
         

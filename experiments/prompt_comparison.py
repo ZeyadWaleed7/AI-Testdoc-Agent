@@ -1,7 +1,3 @@
-"""
-Experiment: Compare different prompting strategies for test generation
-"""
-
 import os
 import sys
 import json
@@ -9,17 +5,14 @@ import time
 from pathlib import Path
 from typing import Dict, List, Any
 
-# Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from ai_agent.agent import AIAgent
 from ai_agent.prompts import PromptStrategy
 
 class PromptComparisonExperiment:
-    """Experiment to compare different prompting strategies."""
     
     def __init__(self, model_name: str = "codellama/CodeLlama-7b-Instruct-hf"):
-        """Initialize the experiment."""
         self.agent = AIAgent(model_name=model_name)
         self.prompt_strategy = PromptStrategy()
         self.results = {
@@ -32,32 +25,18 @@ class PromptComparisonExperiment:
         }
     
     def run_experiment(self, diff_file_path: str, output_dir: str = "experiment_results") -> Dict[str, Any]:
-        """
-        Run the prompt comparison experiment.
-        
-        Args:
-            diff_file_path: Path to the diff file to test
-            output_dir: Directory to save results
-            
-        Returns:
-            Experiment results
-        """
         print(f"🔬 Running prompt comparison experiment on: {diff_file_path}")
         
-        # Create output directory
         os.makedirs(output_dir, exist_ok=True)
         
-        # Load diff content
         with open(diff_file_path, 'r', encoding='utf-8') as f:
             diff_content = f.read()
         
-        # Extract functions from diff
         from ai_agent.watcher import get_functions_from_diff_file
         functions = get_functions_from_diff_file(diff_file_path)
         
         print(f"📊 Found {len(functions)} functions to test")
         
-        # Test each function with each strategy
         for i, (function_name, function_code, file_path) in enumerate(functions, 1):
             print(f"\n🔍 Testing function {i}/{len(functions)}: {function_name}")
             
@@ -83,7 +62,6 @@ class PromptComparisonExperiment:
                     
                     generation_time = time.time() - start_time
                     
-                    # Analyze test quality (simple metrics)
                     quality_metrics = self._analyze_test_quality(test_code, function_code)
                     
                     function_results["strategies"][strategy] = {
@@ -110,36 +88,22 @@ class PromptComparisonExperiment:
             
             self.results["results"][function_name] = function_results
             
-            # Save individual function results
             function_file = os.path.join(output_dir, f"function_{function_name}_results.json")
             with open(function_file, 'w') as f:
                 json.dump(function_results, f, indent=2)
         
-        # Calculate summary statistics
         self._calculate_summary_statistics()
         
-        # Save complete results
         results_file = os.path.join(output_dir, "prompt_comparison_results.json")
         with open(results_file, 'w') as f:
             json.dump(self.results, f, indent=2)
         
-        # Generate report
         self._generate_report(output_dir)
         
         print(f"\n✅ Experiment complete! Results saved to: {output_dir}")
         return self.results
     
     def _analyze_test_quality(self, test_code: str, function_code: str) -> Dict[str, Any]:
-        """
-        Analyze the quality of generated test code.
-        
-        Args:
-            test_code: Generated test code
-            function_code: Original function code
-            
-        Returns:
-            Quality metrics
-        """
         metrics = {
             "test_length": len(test_code.split('\n')),
             "has_assertions": "assert" in test_code.lower(),
@@ -149,18 +113,15 @@ class PromptComparisonExperiment:
             "function_mentions": function_code.split('\n')[0].split('(')[0].replace('def ', '').replace('async def ', '') in test_code
         }
         
-        # Count assertions
         assertion_count = test_code.lower().count('assert')
         metrics["assertion_count"] = assertion_count
         
-        # Estimate coverage (simple heuristic)
         lines_in_function = len([line for line in function_code.split('\n') if line.strip()])
         metrics["estimated_coverage"] = min(assertion_count / max(lines_in_function, 1), 1.0)
         
         return metrics
     
     def _calculate_summary_statistics(self):
-        """Calculate summary statistics across all results."""
         summary = {
             "total_functions": len(self.results["results"]),
             "strategies": {},
@@ -168,7 +129,6 @@ class PromptComparisonExperiment:
             "overall_best_score": 0
         }
         
-        # Initialize strategy stats
         for strategy in self.prompt_strategy.get_all_strategies():
             summary["strategies"][strategy] = {
                 "success_rate": 0,
@@ -179,7 +139,6 @@ class PromptComparisonExperiment:
                 "total_tests": 0
             }
         
-        # Calculate statistics
         for function_name, function_data in self.results["results"].items():
             for strategy, strategy_data in function_data["strategies"].items():
                 stats = summary["strategies"][strategy]
@@ -191,7 +150,6 @@ class PromptComparisonExperiment:
                     stats["avg_assertion_count"] += strategy_data["quality_metrics"].get("assertion_count", 0)
                     stats["avg_estimated_coverage"] += strategy_data["quality_metrics"].get("estimated_coverage", 0)
         
-        # Calculate averages
         for strategy, stats in summary["strategies"].items():
             if stats["total_successful"] > 0:
                 stats["success_rate"] = stats["total_successful"] / stats["total_tests"]
@@ -199,7 +157,6 @@ class PromptComparisonExperiment:
                 stats["avg_assertion_count"] /= stats["total_successful"]
                 stats["avg_estimated_coverage"] /= stats["total_successful"]
         
-        # Find best overall strategy
         for strategy, stats in summary["strategies"].items():
             if stats["total_successful"] > 0:
                 score = (stats["success_rate"] * 0.4 + 
@@ -213,7 +170,6 @@ class PromptComparisonExperiment:
         self.results["summary"] = summary
     
     def _generate_report(self, output_dir: str):
-        """Generate a human-readable report."""
         report_lines = [
             "# Prompt Strategy Comparison Experiment Report",
             "",
@@ -261,7 +217,6 @@ class PromptComparisonExperiment:
                 
                 report_lines.append("")
         
-        # Save report
         report_file = os.path.join(output_dir, "experiment_report.md")
         with open(report_file, 'w') as f:
             f.write('\n'.join(report_lines))
@@ -269,7 +224,6 @@ class PromptComparisonExperiment:
         print(f"📄 Report generated: {report_file}")
 
 def main():
-    """Main function to run the experiment."""
     import argparse
     
     parser = argparse.ArgumentParser(description="Prompt Strategy Comparison Experiment")
@@ -279,11 +233,9 @@ def main():
     
     args = parser.parse_args()
     
-    # Run experiment
     experiment = PromptComparisonExperiment(model_name=args.model)
     results = experiment.run_experiment(args.diff_file, args.output_dir)
     
-    # Print summary
     print("\n📊 Experiment Summary:")
     print(f"Best strategy: {results['summary']['overall_best_strategy']}")
     print(f"Best score: {results['summary']['overall_best_score']:.3f}")

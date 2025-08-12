@@ -298,3 +298,48 @@ You have exceeded your monthly included credits for Inference Providers. Subscri
 
 You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
 2025-08-12 19:49:40,878 - root - INFO - Retrying in 2.44 seconds...
+2025-08-12 20:27:04,734 - root - INFO - Initializing Hugging Face InferenceClient with featherless-ai provider
+2025-08-12 20:27:04,734 - root - INFO - Using model: h2oai/h2ogpt-16k-codellama-13b-python
+2025-08-12 20:27:04,735 - root - INFO - Using HF_TOKEN: YOUR_HF_TO...
+2025-08-12 20:27:05,083 - ai_agent.agent - INFO - Processing diff file: data\PR_13827\diff.patch
+2025-08-12 20:27:05,087 - ai_agent.agent - INFO - Analysis: {'files_modified': ['fastapi/dependencies/utils.py', 'tests/test_union_forms.py'], 'functions_added': [('is_union_of_base_models', 'fastapi/dependencies/utils.py'), ('post_union_form', 'tests/test_union_forms.py'), ('test_post_user_form', 'tests/test_union_forms.py'), ('test_post_company_form', 'tests/test_union_forms.py'), ('test_invalid_form_data', 'tests/test_union_forms.py'), ('test_empty_form', 'tests/test_union_forms.py'), ('test_openapi_schema', 'tests/test_union_forms.py')], 'functions_modified': [], 'functions_removed': [], 'total_lines_added': 180, 'total_lines_removed': 3}
+2025-08-12 20:27:05,090 - ai_agent.agent - INFO - Found 7 functions in diff
+2025-08-12 20:27:05,090 - ai_agent.agent - INFO - Processing function: is_union_of_base_models
+2025-08-12 20:27:05,266 - root - WARNING - Attempt 1 failed: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b7969-76ef03153e65e616473b1f1b;e771e8a6-00eb-4b11-84db-c0d7e7c7ef63)
+
+Invalid credentials in Authorization header
+2025-08-12 20:27:05,267 - root - INFO - Retrying in 1.59 seconds...
+2025-08-12 20:27:07,005 - root - WARNING - Attempt 2 failed: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b796b-0a2633dc166eb88966a9bf8f;46127125-e981-453c-83c1-d0ebe319d140)
+
+Invalid credentials in Authorization header
+2025-08-12 20:27:07,006 - root - INFO - Retrying in 2.39 seconds...
+2025-08-12 20:27:09,541 - root - WARNING - Attempt 3 failed: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b796d-16d538a81ecef5ed78266517;49b522be-1b56-405d-a426-918c67564bab)
+
+Invalid credentials in Authorization header
+2025-08-12 20:27:09,542 - root - ERROR - All 3 attempts failed. Last error: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b796d-16d538a81ecef5ed78266517;49b522be-1b56-405d-a426-918c67564bab)
+
+Invalid credentials in Authorization header
+2025-08-12 20:27:09,690 - root - WARNING - Attempt 1 failed: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b796e-5031d02326da459b28961053;cb38bfec-9d4f-4b6c-9025-68c7afc55844)
+
+Invalid credentials in Authorization header
+2025-08-12 20:27:09,691 - root - INFO - Retrying in 1.91 seconds...
+2025-08-12 20:27:11,741 - root - WARNING - Attempt 2 failed: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b7970-303493b840fc9f810e9719f1;1c3f0cd9-886f-4192-b096-8a2a199a071d)
+
+Invalid credentials in Authorization header
+2025-08-12 20:27:11,742 - root - INFO - Retrying in 2.72 seconds...
+2025-08-12 20:27:14,607 - root - WARNING - Attempt 3 failed: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b7972-13a56dc9256de9c219489b91;5c257388-15dc-43ef-a221-1dd2f140b79c)
+
+Invalid credentials in Authorization header
+2025-08-12 20:27:14,609 - root - ERROR - All 3 attempts failed. Last error: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b7972-13a56dc9256de9c219489b91;5c257388-15dc-43ef-a221-1dd2f140b79c)
+
+Invalid credentials in Authorization header
+2025-08-12 20:27:14,612 - ai_agent.agent - INFO - Successfully processed function: is_union_of_base_models
+2025-08-12 20:27:14,614 - ai_agent.agent - INFO - Processing function: post_union_form
+2025-08-12 20:27:14,763 - root - WARNING - Attempt 1 failed: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b7973-665488781aba227c222a9ece;5080fb85-f34e-452c-98f2-4df9f30c42a9)
+
+Invalid credentials in Authorization header
+2025-08-12 20:27:14,764 - root - INFO - Retrying in 1.24 seconds...
+2025-08-12 20:27:16,151 - root - WARNING - Attempt 2 failed: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b7974-5b14228d095752f8200ff05b;f49e0373-7059-4280-99f6-8f9b321003ff)
+
+Invalid credentials in Authorization header
+2025-08-12 20:27:16,153 - root - INFO - Retrying in 2.99 seconds...

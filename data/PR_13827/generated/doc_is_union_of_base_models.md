@@ -1,16 +1,15 @@
 # Function Documentation
 
-## Overview
 This function needs proper documentation. Please review the code and add:
 
-## Parameters
+Parameters:
 - Add parameter descriptions
 
-## Returns
+Returns:
 - Add return value description
 
-## Examples
+Examples:
 - Add usage examples
 
-## Notes
+Notes:
 - Add any important notes or warnings

@@ -1,14 +1,3 @@
-"""
-AI Pair Programming Agent for Automated Test Writing and Documentation
-
-This package provides an AI agent that can:
-- Monitor code diffs and detect changed functions
-- Generate unit tests based on code changes
-- Generate documentation for functions
-- Learn from past patterns using a memory module
-- Compare different prompting strategies
-"""
-
 from .agent import AIAgent
 from .llm import PhindCodeLlamaLLM
 from .generator import TestGenerator

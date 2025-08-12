@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-Example script demonstrating the Phind-CodeLlama-34B-v2 model usage
-"""
-
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -10,21 +5,16 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ai_agent.llm import PhindCodeLlamaLLM
 
 def main():
-    """Demonstrate the new Phind model capabilities."""
-    
     print("🚀 Phind-CodeLlama-34B-v2 Model Example")
     print("=" * 50)
     
     try:
-        # Initialize the model
         print("Initializing Phind-CodeLlama-34B-v2 model...")
         llm = PhindCodeLlamaLLM()
         print("✅ Model initialized successfully!")
         
-        # Example function to test
         function_code = """
 def calculate_fibonacci(n: int) -> int:
-    \"\"\"Calculate the nth Fibonacci number.\"\"\"
     if n <= 0:
         return 0
     elif n == 1:

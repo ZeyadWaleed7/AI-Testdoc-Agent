@@ -9,7 +9,6 @@ from .watcher import get_functions_from_diff_file, analyze_diff_changes
 from .prompts import PromptStrategy
 
 class AIAgent:
-    """Main AI agent for test generation and documentation."""
     
     def __init__(self, model_name: str = "h2oai/h2ogpt-16k-codellama-13b-python", api_token: str = None, provider: str = "featherless-ai"):
         self.llm = PhindCodeLlamaLLM(model_name, api_token=api_token, provider=provider)
@@ -114,15 +113,11 @@ class AIAgent:
                     "error": str(e)
                 })
                 
-                # Try to generate a basic test even if the main generation fails
                 try:
                     basic_test = f"""# Basic test for {function_name}
 import pytest
 
 def test_{function_name}_basic():
-    \"\"\"Basic test for {function_name} function\"\"\"
-    # TODO: Implement proper test cases
-    # Function code: {function_code.split(chr(10))[0]}
     pass
 """
                     results["generated_tests"][function_name] = basic_test

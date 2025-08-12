@@ -1,7 +1,3 @@
-"""
-CLI interface for the AI Pair Programming Agent
-"""
-
 import argparse
 import sys
 import os

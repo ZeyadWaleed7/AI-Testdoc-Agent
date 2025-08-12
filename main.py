@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-AI Pair Programming Agent for Automated Test Writing and Documentation
-"""
-
 import os
 import sys
 import logging

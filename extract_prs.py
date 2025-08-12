@@ -40,7 +40,6 @@ def extract_data():
             files_url = f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/files"
             files_response = requests.get(files_url, headers=HEADERS)
             
-            # Check if the API request was successful
             if files_response.status_code != 200:
                 print(f"❌ Error getting files for PR #{pr_number}: {files_response.status_code}")
                 print(f"Response: {files_response.text}")
@@ -53,7 +52,6 @@ def extract_data():
                 print(f"Response: {files_response.text}")
                 continue
             
-            # Check if file_list is actually a list
             if not isinstance(file_list, list):
                 print(f"❌ Unexpected response format for PR #{pr_number}: {type(file_list)}")
                 print(f"Response: {file_list}")
@@ -69,7 +67,6 @@ def extract_data():
             patch_url = f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}"
             patch_response = requests.get(patch_url, headers=PATCH_HEADERS)
             
-            # Check if the patch request was successful
             if patch_response.status_code != 200:
                 print(f"❌ Error getting patch for PR #{pr_number}: {patch_response.status_code}")
                 print(f"Response: {patch_response.text}")

@@ -5,7 +5,6 @@ from datetime import datetime
 import logging
 
 class MemoryModule:
-    """Memory module for storing context and patterns."""
     
     def __init__(self, memory_file: str = "agent_memory.json"):
         self.memory_file = memory_file
