@@ -10,7 +10,7 @@ This package provides an AI agent that can:
 """
 
 from .agent import AIAgent
-from .llm import CodeLlamaLLM
+from .llm import PhindCodeLlamaLLM
 from .generator import TestGenerator
 from .documentation import DocumentationGenerator
 from .memory import MemoryModule
@@ -21,7 +21,7 @@ __author__ = "AI Research Team"
 
 __all__ = [
     "AIAgent",
-    "CodeLlamaLLM", 
+    "PhindCodeLlamaLLM", 
     "TestGenerator",
     "DocumentationGenerator",
     "MemoryModule",

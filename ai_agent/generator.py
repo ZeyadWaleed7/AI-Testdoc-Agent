@@ -1,11 +1,11 @@
 import ast
 import re
 from typing import Dict, List, Tuple, Optional
-from .llm import CodeLlamaLLM
+from .llm import PhindCodeLlamaLLM
 import logging
 
 class TestGenerator:
-    def __init__(self, llm: CodeLlamaLLM):
+    def __init__(self, llm: PhindCodeLlamaLLM):
         """Initialize test generator with LLM."""
         self.llm = llm
         self.prompt_strategies = ["naive", "diff-aware", "few-shot", "cot"]

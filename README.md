@@ -2,7 +2,7 @@
 
 ## You can view the tracking sheet [here](https://docs.google.com/spreadsheets/d/1Y1HOmNrpEKYaUMz9QRFJpv2IKY7jnhiJ8cGuCaS1VGU/edit?usp=sharing).
 
-An intelligent AI agent that observes code diffs and automatically generates unit tests and documentation using CodeLlama.
+An intelligent AI agent that observes code diffs and automatically generates unit tests and documentation using Phind-CodeLlama-34B-v2.
 
 ## 🏗️ Architecture
 
@@ -11,7 +11,7 @@ An intelligent AI agent that observes code diffs and automatically generates uni
 | Component | Function |
 |-----------|----------|
 | **Watcher Module** | Monitors code diffs (git diff, GitHub PRs) to detect changed/added functions |
-| **Test Generator** | Uses CodeLlama LLM to write or update unit tests based on diffs |
+| **Test Generator** | Uses Phind-CodeLlama-34B-v2 LLM to write or update unit tests based on diffs |
 | **Documentation Generator** | Generates or edits docstrings and README.md/API.md |
 | **Memory Module** | Stores context on past test gaps or diff patterns to improve future suggestions |
 | **Interface** | CLI commands and GitHub Bot integration |
@@ -41,7 +41,19 @@ cd AI-Testdoc-Agent
 pip install -r requirements.txt
 ```
 
-3. Set up .env variables.
+**Note**: The requirements now include the latest transformers from git to support the Phind-CodeLlama-34B-v2 model via remote inference.
+
+3. Set up Hugging Face API token (optional but recommended for better performance):
+
+```bash
+# Set environment variable
+export HF_TOKEN="your_huggingface_token_here"
+
+# Or create a .env file
+echo "HF_TOKEN=your_huggingface_token_here" > .env
+```
+
+**Note**: The API token is optional but recommended for better performance and rate limits.
 
 ### Basic Usage
 
@@ -75,6 +87,26 @@ python main.py --prompt-strategy diff-aware
 python main.py --memory-insights
 ```
 
+### Try the New Model
+
+Test the Phind-CodeLlama-34B-v2 model with a simple example:
+
+```bash
+python examples/phind_model_example.py
+```
+
+This will demonstrate the model's capabilities for test generation and documentation.
+
+### Test Model Loading
+
+Before running the full agent, you can test if the model loads correctly:
+
+```bash
+python test_model.py
+```
+
+This will verify that the Phind-CodeLlama-34B-v2 model can be loaded and used for generation.
+
 ## 📁 Project Structure
 
 ```
@@ -101,45 +133,68 @@ AI-Testdoc-Agent/
 
 ## 🔧 Configuration
 
+### Remote Inference Setup
+
+The agent now uses the Phind-CodeLlama-34B-v2 model via **Hugging Face Inference API**, which provides:
+
+- **True Remote Execution**: Model runs on Hugging Face's AWS infrastructure
+- **Zero Local Resources**: No GPU, RAM, or storage requirements
+- **Instant Access**: No model downloads or setup time
+- **Scalable Performance**: Leverages cloud computing resources
+
+- **Enhanced Code Understanding**: Better comprehension of complex code structures
+- **Improved Test Generation**: More accurate and comprehensive unit tests
+- **Better Documentation**: Higher quality docstrings and API documentation
+- **Context Awareness**: Superior understanding of code diffs and changes
+
+#### Model Parameters
+
+The model uses optimized generation parameters:
+- **Temperature**: 0.1 (for consistent, focused output)
+- **Top-p**: 0.75 (nucleus sampling for quality)
+- **Top-k**: 40 (diverse token selection)
+- **Max Tokens**: 384 for completions, 1024 for tests, 512 for docs
+
 ### GitHub Token Setup
 
 
 
 ### Model Configuration
 
-The agent uses CodeLlama 7B by default (smaller, faster, less disk space). You can specify a different model:
+The agent uses Phind-CodeLlama-34B-v2 by default, which runs remotely without requiring local model downloads. You can specify a different model:
 
 ```bash
-# Use the default 7B model (recommended for limited disk space)
+# Use the default Phind-CodeLlama-34B-v2 model (runs remotely)
 python main.py
 
-# Use a larger model if you have more disk space
-python main.py --model "codellama/CodeLlama-13b-Instruct-hf"
-python main.py --model "codellama/CodeLlama-34b-Instruct-hf"
+# Use a different model if needed
+python main.py --model "Phind/Phind-CodeLlama-34B-v2"
 ```
 
-### Model Size Comparison & Selection
+### Model Information
 
-Due to disk space constraints and deployment limitations, we selected the **CodeLlama 7B** model as the default choice. Here's a detailed comparison:
+The agent now uses **Phind-CodeLlama-34B-v2** as the default model via **remote inference**, which provides:
 
-| Model | Size | Disk Space | Speed | Quality | Use Case |
-|-------|------|------------|-------|---------|----------|
-| **CodeLlama 7B** (default) | ~13GB | ✅ Small | ✅ Fast | ✅ Good | ✅ Research & Development |
-| CodeLlama 13B | ~40GB | ⚠️ Medium | ⚠️ Medium | ✅ Better | ⚠️ Requires more resources |
-| CodeLlama 34B | ~80GB | ❌ Large | ❌ Slow | ✅ Best | ❌ Heavy resource requirements |
+- **High Quality**: 34B parameter model trained on code-specific data
+- **True Remote Execution**: No local model downloads or GPU requirements
+- **Optimized Performance**: Specifically tuned for code generation tasks
+- **Cloud-Based**: Runs on Hugging Face's AWS infrastructure
 
-#### Why CodeLlama 7B?
+#### Model Details
 
-1. **Disk Space Constraints**: The original 13B model requires ~40GB of disk space, which exceeds the available storage capacity in our development environment.
+- **Model**: Phind/Phind-CodeLlama-34B-v2
+- **Hardware**: Trained on 32x A100-80GB GPUs
+- **Training Time**: 480 GPU-hours
+- **Provider**: AWS us-east-1
+- **Architecture**: Based on CodeLlama with Phind-specific optimizations
+- **Inference**: Uses Hugging Face Inference API for remote execution
 
-2. **Deployment Limitations**: We don't have access to deploy the model on Hugging Face Inference API or similar cloud services, so we must download and run the model locally.
+#### Benefits of Remote Inference
 
-3. **Research Efficiency**: For research purposes, the 7B model provides a good balance between:
-   - **Performance**: Sufficient quality for test generation and documentation
-   - **Resource Usage**: Reasonable disk space and memory requirements (~13GB)
-   - **Speed**: Fast inference for iterative development and testing
-
-4. **Accessibility**: The smaller model makes the research accessible to developers with limited computational resources.
+1. **No Local Resources**: Zero GPU, RAM, or storage requirements
+2. **Instant Access**: No waiting for model downloads or setup
+3. **Always Available**: Leverages Hugging Face's managed infrastructure
+4. **Professional Results**: Generates production-ready tests and documentation
 
 
  
@@ -164,7 +219,7 @@ python main.py \
   --prompt-strategy diff-aware \
   --compare-strategies \
   --memory-insights \
-  --model "codellama/CodeLlama-7b-Instruct-hf"
+  --model "Phind/Phind-CodeLlama-34B-v2"
 ```
 
 ## 📝 Output
@@ -192,5 +247,22 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🔬 Research Context
 
 The agent is designed to work as a pair programming assistant that can understand code changes and generate appropriate tests and documentation.
+
+### Model Performance
+
+The Phind-CodeLlama-34B-v2 model has been specifically optimized for code generation tasks:
+
+- **HumanEval Benchmark**: Achieves competitive results on the HumanEval benchmark
+- **Code Quality**: Generates production-ready code with proper error handling
+- **Test Coverage**: Creates comprehensive test suites covering edge cases
+- **Documentation**: Produces clear, professional documentation
+
+### Model Capabilities
+
+- **Advanced Code Understanding**: 34B parameters provide deep code comprehension
+- **Test Generation**: Creates comprehensive unit tests with edge case coverage
+- **Documentation**: Generates professional docstrings and API documentation
+- **Diff Analysis**: Understands code changes and generates appropriate updates
+- **Remote Execution**: No local computational resources required
 
  

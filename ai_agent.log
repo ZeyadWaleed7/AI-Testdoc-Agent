@@ -40,3 +40,261 @@ Make sure your token has the correct permissions.
 2025-08-01 16:08:54,677 - ai_agent.agent - INFO - Analysis: {'files_modified': ['fastapi/dependencies/utils.py', 'tests/test_union_forms.py'], 'functions_added': [('is_union_of_base_models', 'fastapi/dependencies/utils.py'), ('post_union_form', 'tests/test_union_forms.py'), ('test_post_user_form', 'tests/test_union_forms.py'), ('test_post_company_form', 'tests/test_union_forms.py'), ('test_invalid_form_data', 'tests/test_union_forms.py'), ('test_empty_form', 'tests/test_union_forms.py'), ('test_openapi_schema', 'tests/test_union_forms.py')], 'functions_modified': [], 'functions_removed': [], 'total_lines_added': 180, 'total_lines_removed': 3}
 2025-08-01 16:08:54,685 - ai_agent.agent - INFO - Found 7 functions in diff
 2025-08-01 16:08:54,687 - ai_agent.agent - INFO - Processing function: is_union_of_base_models
+2025-08-12 16:10:23,578 - root - INFO - Loading Phind-CodeLlama model: Phind/Phind-CodeLlama-34B-v2
+2025-08-12 16:10:23,774 - root - ERROR - Error loading model: Phind/Phind-CodeLlama-34B-v2 is not a local folder and is not a valid model identifier listed on 'https://huggingface.co/models'
+If this is a private repository, make sure to pass a token having permission to this repo either by logging in with `hf auth login` or by passing `token=<your_token>`
+2025-08-12 16:31:55,558 - root - INFO - Testing connection to Phind/Phind-CodeLlama-34B-v2 via Hugging Face Inference API
+2025-08-12 17:47:49,489 - root - INFO - Testing connection to Phind/Phind-CodeLlama-34B-v2 via Hugging Face Inference API
+2025-08-12 19:11:26,570 - root - INFO - Initializing Hugging Face InferenceClient with featherless-ai provider
+2025-08-12 19:11:26,571 - root - INFO - Using model: h2oai/h2ogpt-16k-codellama-13b-python
+2025-08-12 19:11:26,571 - root - INFO - Using HF_TOKEN: hf_NwzzeHZ...
+2025-08-12 19:16:02,137 - root - INFO - Initializing Hugging Face InferenceClient with featherless-ai provider
+2025-08-12 19:16:02,137 - root - INFO - Using model: h2oai/h2ogpt-16k-codellama-13b-python
+2025-08-12 19:16:02,138 - root - INFO - Using HF_TOKEN: hf_NwzzeHZ...
+2025-08-12 19:16:04,470 - ai_agent.agent - INFO - Processing diff file: data\PR_13827\diff.patch
+2025-08-12 19:16:04,474 - ai_agent.agent - INFO - Analysis: {'files_modified': ['fastapi/dependencies/utils.py', 'tests/test_union_forms.py'], 'functions_added': [('is_union_of_base_models', 'fastapi/dependencies/utils.py'), ('post_union_form', 'tests/test_union_forms.py'), ('test_post_user_form', 'tests/test_union_forms.py'), ('test_post_company_form', 'tests/test_union_forms.py'), ('test_invalid_form_data', 'tests/test_union_forms.py'), ('test_empty_form', 'tests/test_union_forms.py'), ('test_openapi_schema', 'tests/test_union_forms.py')], 'functions_modified': [], 'functions_removed': [], 'total_lines_added': 180, 'total_lines_removed': 3}
+2025-08-12 19:16:04,477 - ai_agent.agent - INFO - Found 7 functions in diff
+2025-08-12 19:16:04,478 - ai_agent.agent - INFO - Processing function: is_union_of_base_models
+2025-08-12 19:16:04,753 - root - ERROR - Error generating text: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b68c4-6658269d4fc0f6190d5b9530;c5841bc5-1437-40f9-a144-c9fd572fb133)
+
+Invalid credentials in Authorization header
+2025-08-12 19:16:04,757 - ai_agent.agent - ERROR - Error processing function is_union_of_base_models: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:16:04,758 - ai_agent.agent - INFO - Processing function: post_union_form
+2025-08-12 19:16:04,944 - root - ERROR - Error generating text: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b68c5-0ddf1d0a65ec1a80358e8745;62b1b9af-fa93-417a-8eb9-dfb129d7b9ea)
+
+Invalid credentials in Authorization header
+2025-08-12 19:16:04,948 - ai_agent.agent - ERROR - Error processing function post_union_form: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:16:04,949 - ai_agent.agent - INFO - Processing function: test_post_user_form
+2025-08-12 19:16:05,124 - root - ERROR - Error generating text: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b68c5-3d4022b934333c1f14425584;9059702d-0fae-44c1-9df3-4b9a5930367e)
+
+Invalid credentials in Authorization header
+2025-08-12 19:16:05,127 - ai_agent.agent - ERROR - Error processing function test_post_user_form: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:16:05,128 - ai_agent.agent - INFO - Processing function: test_post_company_form
+2025-08-12 19:16:05,379 - root - ERROR - Error generating text: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b68c5-275ad9961963be15553fd21e;ae83d611-8a00-48e5-adfb-d4ecec75a67f)
+
+Invalid credentials in Authorization header
+2025-08-12 19:16:05,383 - ai_agent.agent - ERROR - Error processing function test_post_company_form: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:16:05,383 - ai_agent.agent - INFO - Processing function: test_invalid_form_data
+2025-08-12 19:16:05,557 - root - ERROR - Error generating text: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b68c5-1009f66c7c88d7156472a6bb;b6ded97f-a337-4ccc-b8ed-5a463b9515e0)
+
+Invalid credentials in Authorization header
+2025-08-12 19:16:05,561 - ai_agent.agent - ERROR - Error processing function test_invalid_form_data: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:16:05,562 - ai_agent.agent - INFO - Processing function: test_empty_form
+2025-08-12 19:16:05,739 - root - ERROR - Error generating text: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b68c5-785185146456120a4263619c;bf046b44-88e7-46b6-adff-faf4a18c26ae)
+
+Invalid credentials in Authorization header
+2025-08-12 19:16:05,742 - ai_agent.agent - ERROR - Error processing function test_empty_form: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:16:05,743 - ai_agent.agent - INFO - Processing function: test_openapi_schema
+2025-08-12 19:16:05,920 - root - ERROR - Error generating text: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b68c6-2a4344e0300c60a95d3f7fea;8700e196-e951-4ac9-8f1b-ae1121f1dafe)
+
+Invalid credentials in Authorization header
+2025-08-12 19:16:05,927 - ai_agent.agent - ERROR - Error processing function test_openapi_schema: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:16:05,945 - ai_agent.agent - INFO - Processing diff file: data\fastapi_fastapi\PR_13827\diff.patch
+2025-08-12 19:16:05,997 - ai_agent.agent - INFO - Analysis: {'files_modified': ['fastapi/dependencies/utils.py', 'tests/test_union_forms.py'], 'functions_added': [('is_union_of_base_models', 'fastapi/dependencies/utils.py'), ('post_union_form', 'tests/test_union_forms.py'), ('test_post_user_form', 'tests/test_union_forms.py'), ('test_post_company_form', 'tests/test_union_forms.py'), ('test_invalid_form_data', 'tests/test_union_forms.py'), ('test_empty_form', 'tests/test_union_forms.py'), ('test_openapi_schema', 'tests/test_union_forms.py')], 'functions_modified': [], 'functions_removed': [], 'total_lines_added': 180, 'total_lines_removed': 3}
+2025-08-12 19:16:06,001 - ai_agent.agent - INFO - Found 7 functions in diff
+2025-08-12 19:16:06,001 - ai_agent.agent - INFO - Processing function: is_union_of_base_models
+2025-08-12 19:16:06,442 - root - ERROR - Error generating text: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b68c6-6d74a2af5c335928497dde5a;9be2464b-083b-4623-bdbc-6ac842206457)
+
+Invalid credentials in Authorization header
+2025-08-12 19:16:06,449 - ai_agent.agent - ERROR - Error processing function is_union_of_base_models: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:16:06,450 - ai_agent.agent - INFO - Processing function: post_union_form
+2025-08-12 19:16:06,634 - root - ERROR - Error generating text: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b68c6-6067b51971688836553a8749;5b297c67-9c5c-4ec6-8903-4cd5a0c3e7ff)
+
+Invalid credentials in Authorization header
+2025-08-12 19:16:06,637 - ai_agent.agent - ERROR - Error processing function post_union_form: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:16:06,638 - ai_agent.agent - INFO - Processing function: test_post_user_form
+2025-08-12 19:16:06,814 - root - ERROR - Error generating text: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b68c7-341769a46a5ce3de502f23b8;be75d13e-5460-4109-8d7f-25da237f629b)
+
+Invalid credentials in Authorization header
+2025-08-12 19:16:06,819 - ai_agent.agent - ERROR - Error processing function test_post_user_form: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:16:06,820 - ai_agent.agent - INFO - Processing function: test_post_company_form
+2025-08-12 19:16:06,995 - root - ERROR - Error generating text: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b68c7-2b8292395b63bcf66f0fed51;c4b8bd9c-66cb-4fb9-8f47-c944ce7faa61)
+
+Invalid credentials in Authorization header
+2025-08-12 19:16:07,000 - ai_agent.agent - ERROR - Error processing function test_post_company_form: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:16:07,000 - ai_agent.agent - INFO - Processing function: test_invalid_form_data
+2025-08-12 19:16:07,180 - root - ERROR - Error generating text: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b68c7-2af4daf11ab728de7bc8f58f;b7ea58c6-a369-4745-a79a-dfed5f495661)
+
+Invalid credentials in Authorization header
+2025-08-12 19:16:07,185 - ai_agent.agent - ERROR - Error processing function test_invalid_form_data: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:16:07,186 - ai_agent.agent - INFO - Processing function: test_empty_form
+2025-08-12 19:16:07,364 - root - ERROR - Error generating text: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b68c7-28adbd113baca27458c722d9;a96be915-fc39-47e1-9da3-b801af417849)
+
+Invalid credentials in Authorization header
+2025-08-12 19:16:07,367 - ai_agent.agent - ERROR - Error processing function test_empty_form: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:16:07,368 - ai_agent.agent - INFO - Processing function: test_openapi_schema
+2025-08-12 19:16:07,551 - root - ERROR - Error generating text: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b68c7-0123bf017487eaaf77f1ef6e;71e3e47f-7a01-4561-9ab4-790093ad7bea)
+
+Invalid credentials in Authorization header
+2025-08-12 19:16:07,556 - ai_agent.agent - ERROR - Error processing function test_openapi_schema: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:16:50,370 - root - INFO - Initializing Hugging Face InferenceClient with featherless-ai provider
+2025-08-12 19:16:50,371 - root - INFO - Using model: h2oai/h2ogpt-16k-codellama-13b-python
+2025-08-12 19:16:50,371 - root - INFO - Using HF_TOKEN: hf_IUGOjMk...
+2025-08-12 19:16:55,871 - ai_agent.agent - INFO - Processing diff file: data\PR_13827\diff.patch
+2025-08-12 19:16:55,873 - ai_agent.agent - INFO - Analysis: {'files_modified': ['fastapi/dependencies/utils.py', 'tests/test_union_forms.py'], 'functions_added': [('is_union_of_base_models', 'fastapi/dependencies/utils.py'), ('post_union_form', 'tests/test_union_forms.py'), ('test_post_user_form', 'tests/test_union_forms.py'), ('test_post_company_form', 'tests/test_union_forms.py'), ('test_invalid_form_data', 'tests/test_union_forms.py'), ('test_empty_form', 'tests/test_union_forms.py'), ('test_openapi_schema', 'tests/test_union_forms.py')], 'functions_modified': [], 'functions_removed': [], 'total_lines_added': 180, 'total_lines_removed': 3}
+2025-08-12 19:16:55,875 - ai_agent.agent - INFO - Found 7 functions in diff
+2025-08-12 19:16:55,876 - ai_agent.agent - INFO - Processing function: is_union_of_base_models
+2025-08-12 19:17:57,363 - root - ERROR - Error generating text: 504 Server Error: Gateway Time-out for url: https://router.huggingface.co/featherless-ai/v1/completions
+2025-08-12 19:17:57,366 - ai_agent.agent - ERROR - Error processing function is_union_of_base_models: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:17:57,367 - ai_agent.agent - INFO - Processing function: post_union_form
+2025-08-12 19:20:58,100 - root - ERROR - Error generating text: 504 Server Error: Gateway Time-out for url: https://router.huggingface.co/featherless-ai/v1/completions
+2025-08-12 19:20:58,104 - ai_agent.agent - ERROR - Error processing function post_union_form: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:20:58,104 - ai_agent.agent - INFO - Processing function: test_post_user_form
+2025-08-12 19:21:58,718 - root - ERROR - Error generating text: 504 Server Error: Gateway Time-out for url: https://router.huggingface.co/featherless-ai/v1/completions
+2025-08-12 19:21:58,729 - ai_agent.agent - ERROR - Error processing function test_post_user_form: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:21:58,734 - ai_agent.agent - INFO - Processing function: test_post_company_form
+2025-08-12 19:22:59,920 - root - ERROR - Error generating text: 504 Server Error: Gateway Time-out for url: https://router.huggingface.co/featherless-ai/v1/completions
+2025-08-12 19:22:59,925 - ai_agent.agent - ERROR - Error processing function test_post_company_form: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:22:59,926 - ai_agent.agent - INFO - Processing function: test_invalid_form_data
+2025-08-12 19:24:00,478 - root - ERROR - Error generating text: 504 Server Error: Gateway Time-out for url: https://router.huggingface.co/featherless-ai/v1/completions
+2025-08-12 19:24:00,481 - ai_agent.agent - ERROR - Error processing function test_invalid_form_data: 'DocumentationGenerator' object has no attribute 'generate_documentation'
+2025-08-12 19:24:00,482 - ai_agent.agent - INFO - Processing function: test_empty_form
+2025-08-12 19:31:49,157 - root - INFO - Initializing Hugging Face InferenceClient with featherless-ai provider
+2025-08-12 19:31:49,157 - root - INFO - Using model: h2oai/h2ogpt-16k-codellama-13b-python
+2025-08-12 19:31:49,158 - root - INFO - Using HF_TOKEN: hf_IUGOjMk...
+2025-08-12 19:31:51,858 - ai_agent.agent - INFO - Processing diff file: data\PR_13827\diff.patch
+2025-08-12 19:31:51,860 - ai_agent.agent - INFO - Analysis: {'files_modified': ['fastapi/dependencies/utils.py', 'tests/test_union_forms.py'], 'functions_added': [('is_union_of_base_models', 'fastapi/dependencies/utils.py'), ('post_union_form', 'tests/test_union_forms.py'), ('test_post_user_form', 'tests/test_union_forms.py'), ('test_post_company_form', 'tests/test_union_forms.py'), ('test_invalid_form_data', 'tests/test_union_forms.py'), ('test_empty_form', 'tests/test_union_forms.py'), ('test_openapi_schema', 'tests/test_union_forms.py')], 'functions_modified': [], 'functions_removed': [], 'total_lines_added': 180, 'total_lines_removed': 3}
+2025-08-12 19:31:51,863 - ai_agent.agent - INFO - Found 7 functions in diff
+2025-08-12 19:31:51,863 - ai_agent.agent - INFO - Processing function: is_union_of_base_models
+2025-08-12 19:34:16,391 - ai_agent.agent - INFO - Successfully processed function: is_union_of_base_models
+2025-08-12 19:34:16,392 - ai_agent.agent - INFO - Processing function: post_union_form
+2025-08-12 19:35:45,451 - ai_agent.agent - INFO - Successfully processed function: post_union_form
+2025-08-12 19:35:45,451 - ai_agent.agent - INFO - Processing function: test_post_user_form
+2025-08-12 19:37:13,892 - ai_agent.agent - INFO - Successfully processed function: test_post_user_form
+2025-08-12 19:37:13,893 - ai_agent.agent - INFO - Processing function: test_post_company_form
+2025-08-12 19:38:36,824 - ai_agent.agent - INFO - Successfully processed function: test_post_company_form
+2025-08-12 19:38:36,825 - ai_agent.agent - INFO - Processing function: test_invalid_form_data
+2025-08-12 19:40:56,876 - ai_agent.agent - INFO - Successfully processed function: test_invalid_form_data
+2025-08-12 19:40:56,876 - ai_agent.agent - INFO - Processing function: test_empty_form
+2025-08-12 19:42:50,181 - ai_agent.agent - INFO - Successfully processed function: test_empty_form
+2025-08-12 19:42:50,182 - ai_agent.agent - INFO - Processing function: test_openapi_schema
+2025-08-12 19:43:11,342 - root - WARNING - Attempt 1 failed: 503 Server Error: Service Temporarily Unavailable for url: https://router.huggingface.co/featherless-ai/v1/completions
+2025-08-12 19:43:11,342 - root - INFO - Retrying in 1.84 seconds...
+2025-08-12 19:43:39,805 - root - WARNING - Attempt 2 failed: 503 Server Error: Service Temporarily Unavailable for url: https://router.huggingface.co/featherless-ai/v1/completions
+2025-08-12 19:43:39,806 - root - INFO - Retrying in 2.72 seconds...
+2025-08-12 19:44:03,460 - root - WARNING - Attempt 3 failed: 503 Server Error: Service Temporarily Unavailable for url: https://router.huggingface.co/featherless-ai/v1/completions
+2025-08-12 19:44:03,460 - root - ERROR - All 3 attempts failed. Last error: 503 Server Error: Service Temporarily Unavailable for url: https://router.huggingface.co/featherless-ai/v1/completions
+2025-08-12 19:45:26,271 - ai_agent.agent - INFO - Successfully processed function: test_openapi_schema
+2025-08-12 19:45:26,273 - ai_agent.agent - INFO - Processing diff file: data\fastapi_fastapi\PR_13827\diff.patch
+2025-08-12 19:45:26,275 - ai_agent.agent - INFO - Analysis: {'files_modified': ['fastapi/dependencies/utils.py', 'tests/test_union_forms.py'], 'functions_added': [('is_union_of_base_models', 'fastapi/dependencies/utils.py'), ('post_union_form', 'tests/test_union_forms.py'), ('test_post_user_form', 'tests/test_union_forms.py'), ('test_post_company_form', 'tests/test_union_forms.py'), ('test_invalid_form_data', 'tests/test_union_forms.py'), ('test_empty_form', 'tests/test_union_forms.py'), ('test_openapi_schema', 'tests/test_union_forms.py')], 'functions_modified': [], 'functions_removed': [], 'total_lines_added': 180, 'total_lines_removed': 3}
+2025-08-12 19:45:26,278 - ai_agent.agent - INFO - Found 7 functions in diff
+2025-08-12 19:45:26,278 - ai_agent.agent - INFO - Processing function: is_union_of_base_models
+2025-08-12 19:48:43,005 - root - INFO - Initializing Hugging Face InferenceClient with featherless-ai provider
+2025-08-12 19:48:43,005 - root - INFO - Using model: h2oai/h2ogpt-16k-codellama-13b-python
+2025-08-12 19:48:43,006 - root - INFO - Using HF_TOKEN: hf_IUGOjMk...
+2025-08-12 19:49:05,909 - ai_agent.agent - INFO - Processing diff file: data\PR_13827\diff.patch
+2025-08-12 19:49:05,912 - ai_agent.agent - INFO - Analysis: {'files_modified': ['fastapi/dependencies/utils.py', 'tests/test_union_forms.py'], 'functions_added': [('is_union_of_base_models', 'fastapi/dependencies/utils.py'), ('post_union_form', 'tests/test_union_forms.py'), ('test_post_user_form', 'tests/test_union_forms.py'), ('test_post_company_form', 'tests/test_union_forms.py'), ('test_invalid_form_data', 'tests/test_union_forms.py'), ('test_empty_form', 'tests/test_union_forms.py'), ('test_openapi_schema', 'tests/test_union_forms.py')], 'functions_modified': [], 'functions_removed': [], 'total_lines_added': 180, 'total_lines_removed': 3}
+2025-08-12 19:49:05,913 - ai_agent.agent - INFO - Found 7 functions in diff
+2025-08-12 19:49:05,914 - ai_agent.agent - INFO - Processing function: is_union_of_base_models
+2025-08-12 19:49:06,856 - root - WARNING - Attempt 1 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b7083-6cdb550b5bdb302a51370673;52749045-13fa-4377-83a1-3e6047f9a95a)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:06,857 - root - INFO - Retrying in 1.75 seconds...
+2025-08-12 19:49:08,802 - root - WARNING - Attempt 2 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b7085-73c110712bd5b4d713326f9d;c947419f-b3ce-4801-9132-b5e7e75d623d)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:08,803 - root - INFO - Retrying in 2.13 seconds...
+2025-08-12 19:49:11,104 - root - WARNING - Attempt 3 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b7087-2012dd1c643acca52ace8325;0412f38d-25db-4ec4-8430-9e62961ba96f)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:11,105 - root - ERROR - All 3 attempts failed. Last error: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b7087-2012dd1c643acca52ace8325;0412f38d-25db-4ec4-8430-9e62961ba96f)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:11,292 - root - WARNING - Attempt 1 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b7087-7a85cb2450e4db493573e6b2;7b26442e-b929-4673-b8b3-9eae56dacb21)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:11,292 - root - INFO - Retrying in 1.08 seconds...
+2025-08-12 19:49:12,545 - root - WARNING - Attempt 2 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b7088-542b1352183db32e0c85ce6c;4812dae0-a834-4212-b185-860f571a29f4)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:12,545 - root - INFO - Retrying in 2.17 seconds...
+2025-08-12 19:49:14,891 - root - WARNING - Attempt 3 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b708b-1c91c52044620a713a00ab9a;09b6112e-ffb3-4f6a-9b04-3a4add7c6b34)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:14,892 - root - ERROR - All 3 attempts failed. Last error: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b708b-1c91c52044620a713a00ab9a;09b6112e-ffb3-4f6a-9b04-3a4add7c6b34)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:14,893 - ai_agent.agent - INFO - Successfully processed function: is_union_of_base_models
+2025-08-12 19:49:14,893 - ai_agent.agent - INFO - Processing function: post_union_form
+2025-08-12 19:49:15,098 - root - WARNING - Attempt 1 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b708b-6e341ff1758b3965762ab077;4cc04f39-513e-411c-9899-8d33b062f1e2)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:15,099 - root - INFO - Retrying in 1.20 seconds...
+2025-08-12 19:49:16,493 - root - WARNING - Attempt 2 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b708c-322cfeb9002a19e4062e2625;fda1ce68-7535-46c0-961f-9e5e00305fe3)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:16,493 - root - INFO - Retrying in 2.81 seconds...
+2025-08-12 19:49:19,495 - root - WARNING - Attempt 3 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b708f-073cf4441ea72d403872dbb1;8c995ba2-cca1-4f73-b61b-8d572625e6a4)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:19,496 - root - ERROR - All 3 attempts failed. Last error: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b708f-073cf4441ea72d403872dbb1;8c995ba2-cca1-4f73-b61b-8d572625e6a4)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:19,692 - root - WARNING - Attempt 1 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b708f-0117789d1c11316c58535a71;425c39f4-17bf-4e4f-825a-e923a412d47a)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:19,692 - root - INFO - Retrying in 1.81 seconds...
+2025-08-12 19:49:21,671 - root - WARNING - Attempt 2 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b7091-27f941a335faae200f37dffb;1d1f69b6-8e66-4b24-94c9-f291ec3a6f65)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:21,671 - root - INFO - Retrying in 2.72 seconds...
+2025-08-12 19:49:24,560 - root - WARNING - Attempt 3 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b7094-722319911ddb7ad8334c6c27;7afa6a13-80c9-480d-ad5e-3dbd0c2386c5)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:24,561 - root - ERROR - All 3 attempts failed. Last error: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b7094-722319911ddb7ad8334c6c27;7afa6a13-80c9-480d-ad5e-3dbd0c2386c5)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:24,562 - ai_agent.agent - INFO - Successfully processed function: post_union_form
+2025-08-12 19:49:24,562 - ai_agent.agent - INFO - Processing function: test_post_user_form
+2025-08-12 19:49:24,752 - root - WARNING - Attempt 1 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b7095-744b31b523d03969310bfa8b;71fe035a-aea6-4501-bf1d-92b2d007cd26)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:24,753 - root - INFO - Retrying in 1.87 seconds...
+2025-08-12 19:49:26,807 - root - WARNING - Attempt 2 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b7097-3affc04021dc5b7e09fcdcde;fe6d1e1f-e929-49f0-990d-cc11786ad4d6)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:26,808 - root - INFO - Retrying in 2.38 seconds...
+2025-08-12 19:49:29,376 - root - WARNING - Attempt 3 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b7099-69cbbf05133f04b06b4be4d2;9ea78676-3124-4e15-885e-af17e539951e)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:29,377 - root - ERROR - All 3 attempts failed. Last error: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b7099-69cbbf05133f04b06b4be4d2;9ea78676-3124-4e15-885e-af17e539951e)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:29,556 - root - WARNING - Attempt 1 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b7099-4dc82fba5ec0922c271a6b44;271d62ea-8160-4f19-aecc-5e417a87c97a)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:29,557 - root - INFO - Retrying in 1.37 seconds...
+2025-08-12 19:49:31,100 - root - WARNING - Attempt 2 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b709b-097cb5164dbd6ee81ff2ce4d;17849405-5af8-490c-8e88-8c5e4ab31397)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:31,100 - root - INFO - Retrying in 2.78 seconds...
+2025-08-12 19:49:34,081 - root - WARNING - Attempt 3 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b709e-2bb0eb90577cb2866c3db2bb;922fe959-b313-40bf-8d27-529f95a82b6b)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:34,082 - root - ERROR - All 3 attempts failed. Last error: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b709e-2bb0eb90577cb2866c3db2bb;922fe959-b313-40bf-8d27-529f95a82b6b)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:34,084 - ai_agent.agent - INFO - Successfully processed function: test_post_user_form
+2025-08-12 19:49:34,085 - ai_agent.agent - INFO - Processing function: test_post_company_form
+2025-08-12 19:49:34,285 - root - WARNING - Attempt 1 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b709e-2e3634473c6a9e4056cbce79;7d690fd1-431a-49cf-adf8-9e39a45abb24)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:34,286 - root - INFO - Retrying in 1.15 seconds...
+2025-08-12 19:49:35,630 - root - WARNING - Attempt 2 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b709f-19e679af372ddae060df1415;54a3ce10-f579-4151-8d3c-47c276c82bac)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:35,632 - root - INFO - Retrying in 2.73 seconds...
+2025-08-12 19:49:38,557 - root - WARNING - Attempt 3 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b70a2-4ea58fe379891d0222c7f21a;9b293d8f-c817-4783-a937-08ecb6e552d9)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:38,558 - root - ERROR - All 3 attempts failed. Last error: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b70a2-4ea58fe379891d0222c7f21a;9b293d8f-c817-4783-a937-08ecb6e552d9)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:38,739 - root - WARNING - Attempt 1 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b70a3-6ab14cb46acd709f146095be;565a2bf6-809c-4d76-88c8-daba76142e22)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:38,739 - root - INFO - Retrying in 1.98 seconds...
+2025-08-12 19:49:40,877 - root - WARNING - Attempt 2 failed: 402 Client Error: Payment Required for url: https://router.huggingface.co/featherless-ai/v1/completions (Request ID: Root=1-689b70a5-0c5b424e1c67abff16696550;4d4b2353-fa03-4559-9562-9033b33c6b1f)
+
+You have exceeded your monthly included credits for Inference Providers. Subscribe to PRO to get 20x more monthly included credits.
+2025-08-12 19:49:40,878 - root - INFO - Retrying in 2.44 seconds...

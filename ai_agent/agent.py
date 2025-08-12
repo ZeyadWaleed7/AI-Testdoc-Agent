@@ -1,7 +1,7 @@
 import os
 import logging
 from typing import Dict, List, Any, Optional
-from .llm import CodeLlamaLLM
+from .llm import PhindCodeLlamaLLM
 from .generator import TestGenerator
 from .documentation import DocumentationGenerator
 from .memory import MemoryModule
@@ -11,8 +11,8 @@ from .prompts import PromptStrategy
 class AIAgent:
     """Main AI agent for test generation and documentation."""
     
-    def __init__(self, model_name: str = "codellama/CodeLlama-7b-Instruct-hf", auth_token: str = None):
-        self.llm = CodeLlamaLLM(model_name, auth_token=auth_token)
+    def __init__(self, model_name: str = "h2oai/h2ogpt-16k-codellama-13b-python", api_token: str = None, provider: str = "featherless-ai"):
+        self.llm = PhindCodeLlamaLLM(model_name, api_token=api_token, provider=provider)
         self.test_generator = TestGenerator(self.llm)
         self.doc_generator = DocumentationGenerator(self.llm)
         self.memory = MemoryModule()
@@ -77,17 +77,23 @@ class AIAgent:
                     f.write(test_code)
                 
                 if generate_docs:
-                    doc_content = self.doc_generator.generate_documentation(
-                        function_code=function_code,
-                        function_name=function_name,
-                        diff_context=diff_content
-                    )
-                    
-                    results["generated_docs"][function_name] = doc_content
-                    
-                    doc_file_path = os.path.join(output_dir, f"doc_{function_name}.md")
-                    with open(doc_file_path, 'w') as f:
-                        f.write(doc_content)
+                    try:
+                        doc_content = self.doc_generator.generate_documentation(
+                            function_code=function_code,
+                            function_name=function_name,
+                            diff_context=diff_content
+                        )
+                        
+                        results["generated_docs"][function_name] = doc_content
+                        
+                        doc_file_path = os.path.join(output_dir, f"doc_{function_name}.md")
+                        with open(doc_file_path, 'w') as f:
+                            f.write(doc_content)
+                            
+                    except Exception as doc_error:
+                        self.logger.error(f"Error generating documentation for {function_name}: {doc_error}")
+                        doc_content = f"# Error generating documentation: {str(doc_error)}"
+                        results["generated_docs"][function_name] = doc_content
                 
                 results["functions"].append({
                     "name": function_name,
@@ -95,6 +101,8 @@ class AIAgent:
                     "test_generated": True,
                     "doc_generated": generate_docs
                 })
+                
+                self.logger.info(f"Successfully processed function: {function_name}")
                 
             except Exception as e:
                 self.logger.error(f"Error processing function {function_name}: {e}")
@@ -105,6 +113,25 @@ class AIAgent:
                     "doc_generated": False,
                     "error": str(e)
                 })
+                
+                # Try to generate a basic test even if the main generation fails
+                try:
+                    basic_test = f"""# Basic test for {function_name}
+import pytest
+
+def test_{function_name}_basic():
+    \"\"\"Basic test for {function_name} function\"\"\"
+    # TODO: Implement proper test cases
+    # Function code: {function_code.split(chr(10))[0]}
+    pass
+"""
+                    results["generated_tests"][function_name] = basic_test
+                    test_file_path = os.path.join(output_dir, f"test_{function_name}.py")
+                    with open(test_file_path, 'w') as f:
+                        f.write(basic_test)
+                    self.logger.info(f"Generated basic test for {function_name}")
+                except Exception as basic_test_error:
+                    self.logger.error(f"Failed to generate basic test for {function_name}: {basic_test_error}")
         
         return results
 

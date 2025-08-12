@@ -1,11 +1,11 @@
 import ast
 import re
 from typing import Dict, List, Tuple, Optional
-from .llm import CodeLlamaLLM
+from .llm import PhindCodeLlamaLLM
 import logging
 
 class DocumentationGenerator:
-    def __init__(self, llm: CodeLlamaLLM):
+    def __init__(self, llm: PhindCodeLlamaLLM):
         """Initialize documentation generator with LLM."""
         self.llm = llm
     
@@ -146,6 +146,20 @@ class DocumentationGenerator:
         except Exception as e:
             logging.error(f"Error generating documentation for {function_name}: {e}")
             return f"# Error generating documentation: {str(e)}"
+    
+    def generate_documentation(self, function_code: str, function_name: str, diff_context: str = "") -> str:
+        """
+        Generate documentation for a specific function (compatibility method for agent.py).
+        
+        Args:
+            function_code: The function code
+            function_name: Name of the function
+            diff_context: Optional diff context (not used in current implementation)
+            
+        Returns:
+            Generated documentation
+        """
+        return self.generate_documentation_for_function(function_code, function_name)
     
     def generate_readme_section(self, functions: List[Tuple[str, str]], module_name: str) -> str:
         """

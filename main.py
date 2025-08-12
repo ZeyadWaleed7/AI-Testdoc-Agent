@@ -74,10 +74,13 @@ def main():
                        help="Prompt strategy to use")
     parser.add_argument("--compare-strategies", action="store_true", 
                        help="Compare all prompt strategies")
-    parser.add_argument("--model", default="codellama/CodeLlama-7b-Instruct-hf",
+    parser.add_argument("--model", default="h2oai/h2ogpt-16k-codellama-13b-python",
                        help="LLM model to use")
     parser.add_argument("--hf-token", default=None,
-                       help="Hugging Face access token (or set HF_TOKEN env var)")
+                       help="Hugging Face API token for remote inference")
+    parser.add_argument("--provider", default="featherless-ai",
+                       choices=["featherless-ai", "default", "huggingface"],
+                       help="Hugging Face provider to use")
     parser.add_argument("--memory-insights", action="store_true",
                        help="Show memory insights")
     parser.add_argument("--clear-memory", action="store_true",
@@ -93,13 +96,13 @@ def main():
     if not args.extract_only:
         print("Starting AI Agent...")
         try:
-            hf_token = args.hf_token or os.getenv("HF_TOKEN", "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")
-            agent = AIAgent(model_name=args.model, auth_token=hf_token)
+            hf_token = args.hf_token or os.getenv("HF_TOKEN")
+            agent = AIAgent(model_name=args.model, api_token=hf_token, provider=args.provider)
             print("AI Agent started successfully!")
         except Exception as e:
             print(f"Error starting AI Agent: {e}")
             print("Please make sure you have installed the required packages:")
-            print("pip install transformers accelerate torch")
+            print("pip install huggingface_hub")
             return
     
     if not args.process_only:
