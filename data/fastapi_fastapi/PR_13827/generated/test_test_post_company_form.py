@@ -1,3 +1,50 @@
-Error: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b68c7-2b8292395b63bcf66f0fed51;c4b8bd9c-66cb-4fb9-8f47-c944ce7faa61)
-
-Invalid credentials in Authorization header
+str
++    industry: str
++
++
++@app.post("/form-union/")
++async def post_company_form(form: Form[Union[UserForm, CompanyForm]]) -> dict:
++    return form.dict()
++
++
++def test_post_company_form():
++    client = TestClient(app)
++
++    # Test with UserForm
++    response = client.post(
++        "/form-union/", data={"name": "John Doe", "email": "john.doe@example.com"}
++    )
++    assert response.status_code == 200, response.text
++    assert response.json() == {
++        "received": {"name": "John Doe", "email": "john.doe@example.com"}
++    }
++
++    # Test with CompanyForm
++    response = client.post(
++        "/form-union/", data={"company_name": "Tech Corp", "industry": "Technology"}
++    )
++    assert response.status_code == 200, response.text
++    assert response.json() == {
++        "received": {"company_name": "Tech Corp", "industry": "Technology"}
++    }
++
++    # Test with mixed types
++    response = client.post(
++        "/form-union/", data={"name": "John Doe", "email": "john.doe@example.com", "company_name": "Tech Corp", "industry": "Technology"}
++    )
++    assert response.status_code == 200, response.text
++    assert response.json() == {
++        "received": {"name": "John Doe", "email": "john.doe@example.com", "company_name": "Tech Corp", "industry": "Technology"}
++    }
++
++    # Test with nested fields
++    response = client.post(
++        "/form-union/", data={"name": "John Doe", "email": "john.doe@example.com", "company_name": "Tech Corp", "industry": "Technology", "nested": {"subfield": "value"}}
++    )
++    assert response.status_code == 200, response.text
++    assert response.json() == {
++        "received": {"name": "John Doe", "email": "john.doe@example.com", "company_name": "Tech Corp", "industry": "Technology", "nested": {"subfield": "value"}}
++    }
++
++    # Test with invalid data
++    response

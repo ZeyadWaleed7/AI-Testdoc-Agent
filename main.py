@@ -37,7 +37,7 @@ def process_diff_files(agent: AIAgent, prompt_strategy: str = "diff-aware", comp
         
         try:
             if compare_strategies:
-                results = agent.compare_prompt_strategies(
+                _ = agent.compare_prompt_strategies(
                     diff_file_path=str(diff_file),
                     output_dir=str(output_dir)
                 )
@@ -73,9 +73,9 @@ def main():
                        help="LLM model to use")
     parser.add_argument("--hf-token", default=None,
                        help="Hugging Face API token for remote inference")
-    parser.add_argument("--provider", default="featherless-ai",
-                       choices=["featherless-ai", "default", "huggingface"],
-                       help="Hugging Face provider to use")
+    parser.add_argument("--provider", default="hf-inference",
+                       choices=["hf-inference", "huggingface", "featherless-ai", "default", "local"],
+                       help="Backend provider. Use 'local' for offline Transformers inference.")
     parser.add_argument("--memory-insights", action="store_true",
                        help="Show memory insights")
     parser.add_argument("--clear-memory", action="store_true",
@@ -92,6 +92,11 @@ def main():
         print("Starting AI Agent...")
         try:
             hf_token = args.hf_token or os.getenv("HF_TOKEN")
+            if args.provider == "local":
+                print("➡️  Provider: LOCAL (Transformers). No HF API credits will be used.")
+            else:
+                if not hf_token:
+                    print("⚠️  No HF token detected. Remote providers may fail or be rate-limited.")
             agent = AIAgent(model_name=args.model, api_token=hf_token, provider=args.provider)
             print("AI Agent started successfully!")
         except Exception as e:
@@ -129,4 +134,4 @@ def main():
     print("\n✅ Workflow complete!")
 
 if __name__ == "__main__":
-    main()  
+    main()

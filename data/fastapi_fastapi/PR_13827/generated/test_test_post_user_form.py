@@ -1,3 +1,56 @@
-Error: 401 Client Error: Unauthorized for url: https://huggingface.co/api/models/h2oai/h2ogpt-16k-codellama-13b-python?expand=inferenceProviderMapping (Request ID: Root=1-689b68c7-341769a46a5ce3de502f23b8;be75d13e-5460-4109-8d7f-25da237f629b)
-
-Invalid credentials in Authorization header
+_name: str
++    address: str
++
++
++class EmployeeForm(BaseModel):
++    employee_id: int
++    name: str
++    position: str
++
++
++@app.post("/form-union/")
++async def post_user_form(data: Union[UserForm, CompanyForm, EmployeeForm]):
++    return {"received": data}
++
++
++def test_post_user_form():
++    client = TestClient(app)
++
++    # Test with UserForm
++    response = client.post(
++        "/form-union/", data={"name": "John Doe", "email": "john@example.com"}
++    )
++    assert response.status_code == 200, response.text
++    assert response.json() == {
++        "received": {"name": "John Doe", "email": "john@example.com"}
++    }
++
++    # Test with CompanyForm
++    response = client.post(
++        "/form-union/", data={"company_name": "TechCorp", "address": "123 Main St"}
++    )
++    assert response.status_code == 200, response.text
++    assert response.json() == {
++        "received": {"company_name": "TechCorp", "address": "123 Main St"}
++    }
++
++    # Test with EmployeeForm
++    response = client.post(
++        "/form-union/", data={"employee_id": 1, "name": "Jane Doe", "position": "Software Engineer"}
++    )
++    assert response.status_code == 200, response.text
++    assert response.json() == {
++        "received": {"employee_id": 1, "name": "Jane Doe", "position": "Software Engineer"}
++    }
++
++    # Test with mixed types
++    response = client.post(
++        "/form-union/", data={"name": "John Doe", "email": "john@example.com", "company_name": "TechCorp", "address": "123 Main St"}
++    )
++    assert response.status_code == 200, response.text
++    assert response.json() == {
++        "received": {"name": "John Doe", "email": "john@example.com", "company_name": "TechCorp", "address": "123 Main St"}
++    }
++
++    # Test with invalid data types
++    response =
