@@ -19,46 +19,54 @@ def setup_logging():
         ]
     )
 
-def process_diff_files(agent: AIAgent, prompt_strategy: str = "diff-aware", compare_strategies: bool = False):
-    print(f"\nStep 2: Processing diff files with strategy: {prompt_strategy}")
-    
+def process_diff_files(agent: AIAgent, strategies: list[str] = None, compare_strategies: bool = False):
+    print(f"\nStep 2: Processing diff files with strategies: {strategies}")
+
+    strategies = strategies or ["diff-aware"]  # default if None
+
     data_dir = Path(BASE_OUTPUT_PATH)
     if not data_dir.exists():
         print(f"Data folder {data_dir} not found. Please run data extraction first.")
         return
-    
+
     processed_count = 0
-    
+
     for diff_file in data_dir.rglob("diff.patch"):
         print(f"\nProcessing: {diff_file}")
-        
         pr_dir = diff_file.parent
-        output_dir = pr_dir / "generated"
-        
-        try:
-            if compare_strategies:
-                _ = agent.compare_prompt_strategies(
-                    diff_file_path=str(diff_file),
-                    output_dir=str(output_dir)
-                )
-                print(f"Strategy comparison complete for {diff_file}")
-            else:
-                results = agent.process_diff_file(
-                    diff_file_path=str(diff_file),
-                    output_dir=str(output_dir),
-                    prompt_strategy=prompt_strategy,
-                    generate_docs=True
-                )
-                print(f"Processing complete for {diff_file}")
-                print(f"Generated {len(results['generated_tests'])} tests and {len(results['generated_docs'])} docs")
-            
-            processed_count += 1
-            
-        except Exception as e:
-            print(f"Error processing {diff_file}: {e}")
-            continue
-    
+
+        for prompt_strategy in strategies:
+            # Safe folder names
+            safe_model_name = agent.model_name.replace("/", "_").replace("-", "_")
+            safe_strategy = prompt_strategy.replace("/", "_").replace("-", "_")
+            output_dir = pr_dir / safe_model_name / safe_strategy
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            try:
+                if compare_strategies:
+                    _ = agent.compare_prompt_strategies(
+                        diff_file_path=str(diff_file),
+                        output_dir=str(output_dir)
+                    )
+                    print(f"Strategy comparison complete for {diff_file} [{prompt_strategy}]")
+                else:
+                    results = agent.process_diff_file(
+                        diff_file_path=str(diff_file),
+                        output_dir=str(output_dir),
+                        prompt_strategy=prompt_strategy,
+                        generate_docs=True
+                    )
+                    print(f"Processing complete for {diff_file} [{prompt_strategy}]")
+                    print(f"Generated {len(results['generated_tests'])} tests and {len(results['generated_docs'])} docs")
+
+                processed_count += 1
+
+            except Exception as e:
+                print(f"Error processing {diff_file} [{prompt_strategy}]: {e}")
+                continue
+
     print(f"\nProcessed {processed_count} diff files")
+
 
 def main():
     parser = argparse.ArgumentParser(description="AI Pair Programming Agent")

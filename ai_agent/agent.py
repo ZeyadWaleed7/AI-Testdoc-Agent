@@ -15,6 +15,7 @@ class AIAgent:
         api_token: Optional[str] = None,
         provider: str = "hf-inference",
     ):
+        self.model_name = model_name
         self.llm = PhindCodeLlamaLLM(model_name, api_token=api_token, provider=provider)
         self.test_generator = TestGenerator(self.llm)
         self.doc_generator = DocumentationGenerator(self.llm)

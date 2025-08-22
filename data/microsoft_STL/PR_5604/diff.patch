@@ -1,0 +1,61 @@
+From f8b86d6f5aa08250c1697eae151f077ca4206844 Mon Sep 17 00:00:00 2001
+From: "A. Jiang" <de34@live.cn>
+Date: Tue, 24 Jun 2025 01:05:05 +0800
+Subject: [PATCH] Implement WG21-P3223R2
+
+---
+ stl/inc/istream                                     |  5 +++++
+ stl/inc/yvals_core.h                                |  1 +
+ .../tests/VSO_0000000_nullptr_stream_out/test.cpp   | 13 +++++++++++++
+ 3 files changed, 19 insertions(+)
+
+diff --git a/stl/inc/istream b/stl/inc/istream
+index 7e820b16e0b..9a931500047 100644
+--- a/stl/inc/istream
++++ b/stl/inc/istream
+@@ -528,6 +528,11 @@ public:
+         return *this;
+     }
+ 
++    template <class _CharType = _Elem, enable_if_t<is_same_v<_CharType, char>, int> = 0>
++    basic_istream& ignore(const streamsize _Count, const _Elem _Delim) {
++        return ignore(_Count, _Traits::to_int_type(_Delim));
++    }
++
+     basic_istream& __CLR_OR_THIS_CALL read(_Elem* _Str, streamsize _Count) { // read up to _Count characters into buffer
+         ios_base::iostate _State = ios_base::goodbit;
+         _Chcount                 = 0;
+diff --git a/stl/inc/yvals_core.h b/stl/inc/yvals_core.h
+index 4d8f0a2d76b..26d479fb4d3 100644
+--- a/stl/inc/yvals_core.h
++++ b/stl/inc/yvals_core.h
+@@ -80,6 +80,7 @@
+ //     (__cpp_lib_freestanding_algorithm and __cpp_lib_freestanding_array only)
+ // P2937R0 Freestanding Library: Remove strtok
+ // P2968R2 Make std::ignore A First-Class Object
++// P3223R2 Making istream::ignore() Less Surprising
+ // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
+ //     (for atomic<cv T>)
+ 
+diff --git a/tests/std/tests/VSO_0000000_nullptr_stream_out/test.cpp b/tests/std/tests/VSO_0000000_nullptr_stream_out/test.cpp
+index 52e074acd43..635bce087c2 100644
+--- a/tests/std/tests/VSO_0000000_nullptr_stream_out/test.cpp
++++ b/tests/std/tests/VSO_0000000_nullptr_stream_out/test.cpp
+@@ -64,4 +64,17 @@ int main() {
+     STATIC_ASSERT(OstreamInsertable<PublicOstream, int>);
+     STATIC_ASSERT(OstreamInsertable<PrivateOstream&, int>);
+     STATIC_ASSERT(!OstreamInsertable<PrivateOstream, int>);
++
++    { // Test P3223R2 "Making std::istream::ignore Less Surprising"
++        istringstream in{"\xF0\x9F\xA4\xA1 Clown Face"};
++        decltype(auto) ret = in.ignore(100, '\xA1');
++
++        STATIC_ASSERT(is_same_v<decltype(ret), istream&>);
++        assert(&ret == &static_cast<istream&>(in));
++        assert(in.gcount() == 4);
++
++        string s;
++        in >> s;
++        assert(s == "Clown");
++    }
+ }

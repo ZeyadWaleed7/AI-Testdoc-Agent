@@ -1,0 +1,48 @@
+From eec94d3e784c6f6cc6c8029e1278d068e17951c1 Mon Sep 17 00:00:00 2001
+From: "A. Jiang" <de34@live.cn>
+Date: Sat, 21 Jun 2025 13:55:33 +0800
+Subject: [PATCH] Implement LWG-4222
+
+---
+ stl/inc/expected                           |  1 +
+ tests/std/tests/P0323R12_expected/test.cpp | 15 +++++++++++++++
+ 2 files changed, 16 insertions(+)
+
+diff --git a/stl/inc/expected b/stl/inc/expected
+index 4080ad8b5ef..5f9422c7a5f 100644
+--- a/stl/inc/expected
++++ b/stl/inc/expected
+@@ -306,6 +306,7 @@ public:
+ 
+     template <class _Uty = remove_cv_t<_Ty>>
+         requires (!is_same_v<remove_cvref_t<_Uty>, in_place_t> && !is_same_v<remove_cvref_t<_Uty>, expected>
++                     && !is_same_v<remove_cvref_t<_Uty>, unexpect_t>
+                      && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected>
+                      && (!is_same_v<remove_cv_t<_Ty>, bool>
+ #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10655311
+diff --git a/tests/std/tests/P0323R12_expected/test.cpp b/tests/std/tests/P0323R12_expected/test.cpp
+index ce2eccd161b..f88662efda9 100644
+--- a/tests/std/tests/P0323R12_expected/test.cpp
++++ b/tests/std/tests/P0323R12_expected/test.cpp
+@@ -2509,6 +2509,21 @@ static_assert(!is_assignable_v<expected<void, move_only>&, ambiguating_expected_
+ 
+ static_assert(test_lwg_3886());
+ 
++// Test LWG-4222 "expected constructor from a single value missing a constraint"
++
++struct ConstructibleFromEverything {
++    explicit ConstructibleFromEverything(auto);
++};
++
++struct ConvertibleFromInt {
++    ConvertibleFromInt(int);
++};
++
++static_assert(!is_constructible_v<expected<ConstructibleFromEverything, ConvertibleFromInt>, unexpect_t&>);
++static_assert(!is_constructible_v<expected<ConstructibleFromEverything, ConvertibleFromInt>, const unexpect_t&>);
++static_assert(!is_constructible_v<expected<ConstructibleFromEverything, ConvertibleFromInt>, unexpect_t>);
++static_assert(!is_constructible_v<expected<ConstructibleFromEverything, ConvertibleFromInt>, const unexpect_t>);
++
+ int main() {
+     test_unexpected::test_all();
+     static_assert(test_unexpected::test_all());

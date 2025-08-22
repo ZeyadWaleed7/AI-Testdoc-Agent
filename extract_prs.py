@@ -15,7 +15,7 @@ PATCH_HEADERS = {
 }
 
 REPOS = [
-    {"owner": "fastapi", "repo": "fastapi", "prs": [13827]},
+    {"owner": "microsoft", "repo": "STL", "prs": [5551]},
 ]
 
 BASE_OUTPUT_PATH = "data"  
