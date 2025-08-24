@@ -315,12 +315,12 @@ def main():
     parser.add_argument("--compare-strategies", action="store_true", 
                        help="Compare all prompt strategies")
     parser.add_argument("--model", default="h2oai/h2ogpt-16k-codellama-13b-python",
-                       help="LLM model to use")
+                       help="LLM model to use. For Ollama, use model name like 'deepseek-coder'")
     parser.add_argument("--hf-token", default=None,
                        help="Hugging Face API token for remote inference")
     parser.add_argument("--provider", default="hf-inference",
-                       choices=["hf-inference", "huggingface", "featherless-ai", "default", "local"],
-                       help="Backend provider. Use 'local' for offline Transformers inference.")
+                       choices=["hf-inference", "huggingface", "featherless-ai", "default", "local", "ollama"],
+                       help="Backend provider. Use 'local' for offline Transformers inference, 'ollama' for local Ollama models.")
     parser.add_argument("--memory-insights", action="store_true",
                        help="Show memory insights")
     parser.add_argument("--clear-memory", action="store_true",
@@ -371,6 +371,8 @@ def main():
             hf_token = args.hf_token or os.getenv("HF_TOKEN")
             if args.provider == "local":
                 print("➡️  Provider: LOCAL (Transformers). No HF API credits will be used.")
+            elif args.provider == "ollama":
+                print("➡️  Provider: OLLAMA (Local). No API credits will be used.")
             else:
                 if not hf_token:
                     print("⚠️  No HF token detected. Remote providers may fail or be rate-limited.")

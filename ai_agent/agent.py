@@ -56,8 +56,8 @@ class AIAgent:
             "memory_summary": self.memory.get_memory_summary(),
         }
 
-        for function_name, function_code, file_path in functions:
-            self.logger.info(f"Processing function: {function_name}")
+        for function_name, function_code, file_path, language in functions:
+            self.logger.info(f"Processing {language} function: {function_name}")
 
             self.memory.store_function_context(
                 function_name=function_name,
@@ -71,6 +71,7 @@ class AIAgent:
                     function_name=function_name,
                     diff_context=diff_content,
                     prompt_strategy=prompt_strategy,
+                    language=language,
                 )
 
                 # treat empty/error placeholders as failures (don’t mark success)
@@ -85,8 +86,11 @@ class AIAgent:
 
                 results["generated_tests"][function_name] = test_code
 
-                test_file_path = os.path.join(output_dir, f"test_{function_name}.py")
-                with open(test_file_path, "w") as f:
+                # Get the correct file extension for the language
+                from .language_detector import LanguageDetector
+                file_extension = LanguageDetector.get_file_extension_for_language(language)
+                test_file_path = os.path.join(output_dir, f"test_{function_name}{file_extension}")
+                with open(test_file_path, "w", encoding='utf-8') as f:
                     f.write(test_code)
 
                 if generate_docs:
@@ -134,20 +138,20 @@ class AIAgent:
 
                 # fallback: write a minimal placeholder test so the pipeline still produces a file
                 try:
-                    basic_test = f"""# Basic test for {function_name}
-import pytest
-
-def test_{function_name}_basic():
-    pass
-"""
+                    from .language_detector import LanguageDetector
+                    file_extension = LanguageDetector.get_file_extension_for_language(language)
+                    test_frameworks = LanguageDetector.get_test_frameworks_for_language(language)
+                    primary_framework = test_frameworks[0] if test_frameworks else "standard"
+                    
+                    basic_test = self._generate_fallback_test(function_name, language, primary_framework)
                     results["generated_tests"][function_name] = basic_test
-                    test_file_path = os.path.join(output_dir, f"test_{function_name}.py")
-                    with open(test_file_path, "w") as f:
+                    test_file_path = os.path.join(output_dir, f"test_{function_name}{file_extension}")
+                    with open(test_file_path, "w", encoding='utf-8') as f:
                         f.write(basic_test)
-                    self.logger.info(f"Generated basic test for {function_name}")
+                    self.logger.info(f"Generated basic {language} test for {function_name}")
                 except Exception as basic_test_error:
                     self.logger.error(
-                        f"Failed to generate basic test for {function_name}: {basic_test_error}"
+                        f"Failed to generate basic {language} test for {function_name}: {basic_test_error}"
                     )
 
         return results
@@ -206,6 +210,83 @@ Provide specific, actionable suggestions for improving test coverage, readabilit
 
     def get_memory_insights(self) -> Dict[str, Any]:
         return self.memory.get_insights()
+
+    def _generate_fallback_test(self, function_name: str, language: str, framework: str) -> str:
+        """Generate a basic fallback test based on the language and framework."""
+        if language == "python":
+            return f"""# Basic test for {function_name}
+import pytest
+
+def test_{function_name}_basic():
+    pass
+"""
+        elif language in ["javascript", "typescript"]:
+            if framework == "jest":
+                return f"""// Basic test for {function_name}
+describe('{function_name}', () => {{
+    test('should work', () => {{
+        expect(true).toBe(true);
+    }});
+}});
+"""
+            else:
+                return f"""// Basic test for {function_name}
+// TODO: Implement proper tests using {framework}
+"""
+        elif language == "java":
+            return f"""// Basic test for {function_name}
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+public class {function_name}Test {{
+    @Test
+    public void testBasic() {{
+        assertTrue(true);
+    }}
+}}
+"""
+        elif language == "cpp":
+            return f"""// Basic test for {function_name}
+#include <gtest/gtest.h>
+
+TEST({function_name}Test, Basic) {{
+    EXPECT_TRUE(true);
+}}
+"""
+        elif language == "c":
+            return f"""// Basic test for {function_name}
+#include <unity.h>
+
+void test_{function_name}_basic(void) {{
+    TEST_ASSERT_TRUE(1);
+}}
+"""
+        elif language == "go":
+            return f"""// Basic test for {function_name}
+package main
+
+import "testing"
+
+func Test{function_name}Basic(t *testing.T) {{
+    if true != true {{
+        t.Error("Basic test failed")
+    }}
+}}
+"""
+        elif language == "rust":
+            return f"""// Basic test for {function_name}
+#[cfg(test)]
+mod tests {{
+    #[test]
+    fn test_{function_name}_basic() {{
+        assert!(true);
+    }}
+}}
+"""
+        else:
+            return f"""# Basic test for {function_name} ({language})
+# TODO: Implement proper tests using {framework}
+"""
 
     def clear_memory(self):
         self.memory.clear()

@@ -3,33 +3,32 @@ from typing import Dict, List, Any
 class PromptTemplates:
     
     @staticmethod
-    def naive_prompt(function_code: str) -> str:
-        return f"""Write a comprehensive unit test for this function:
+    def naive_prompt(function_code: str, language: str = "python") -> str:
+        from .language_detector import LanguageDetector
+        test_frameworks = LanguageDetector.get_test_frameworks_for_language(language)
+        primary_framework = test_frameworks[0] if test_frameworks else "standard"
+        
+        return f"""Write ONLY the test code for this {language} function using {primary_framework}:
 
 {function_code}
 
-Please include:
-- Test cases for normal operation
-- Edge cases
-- Error conditions
-- Clear test names and descriptions"""
+Generate the test code directly without any explanations, comments, or additional text. Start with the test code immediately."""
 
 
     @staticmethod
-    def diff_aware_prompt(function_code: str, diff_context: str) -> str:
-        return f"""Write a comprehensive unit test for this function. 
-Here's the function code:
+    def diff_aware_prompt(function_code: str, diff_context: str, language: str = "python") -> str:
+        from .language_detector import LanguageDetector
+        test_frameworks = LanguageDetector.get_test_frameworks_for_language(language)
+        primary_framework = test_frameworks[0] if test_frameworks else "standard"
+        
+        return f"""Write ONLY the test code for this {language} function using {primary_framework}. 
+Function code:
 {function_code}
 
-Here's what changed in the diff:
+Diff context:
 {diff_context}
 
-Please write tests that:
-- Cover the new functionality added in the diff
-- Test the specific changes made
-- Include edge cases related to the modifications
-- Ensure backward compatibility if applicable
-- Test error conditions that might arise from the changes"""
+Generate the test code directly without any explanations, comments, or additional text. Start with the test code immediately."""
     
 
 
@@ -181,22 +180,31 @@ class PromptStrategy:
         if strategy not in self.strategies:
             raise ValueError(f"Unknown strategy: {strategy}")
         
-        return self.strategies[strategy](**kwargs)
+        # Get the strategy function
+        strategy_func = self.strategies[strategy]
+        
+        # Handle different parameter requirements for different strategies
+        if strategy == "diff-aware":
+            return strategy_func(kwargs.get('function_code', ''), kwargs.get('diff_context', ''), kwargs.get('language', 'python'))
+        elif strategy == "few-shot":
+            return strategy_func(kwargs.get('function_code', ''), kwargs.get('examples', None))
+        else:
+            return strategy_func(kwargs.get('function_code', ''), kwargs.get('language', 'python'))
     
     def get_all_strategies(self) -> List[str]:
         return list(self.strategies.keys())
     
-    def compare_strategies(self, function_code: str, diff_context: str = "") -> Dict[str, str]:
+    def compare_strategies(self, function_code: str, diff_context: str = "", language: str = "python") -> Dict[str, str]:
         prompts = {}
         
         for strategy in self.strategies:
             try:
                 if strategy == "diff-aware":
-                    prompts[strategy] = self.strategies[strategy](function_code, diff_context)
+                    prompts[strategy] = self.strategies[strategy](function_code, diff_context, language)
                 elif strategy == "few-shot":
                     prompts[strategy] = self.strategies[strategy](function_code)
                 else:
-                    prompts[strategy] = self.strategies[strategy](function_code)
+                    prompts[strategy] = self.strategies[strategy](function_code, language)
             except Exception as e:
                 prompts[strategy] = f"Error generating prompt for {strategy}: {str(e)}"
         

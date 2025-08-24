@@ -22,6 +22,7 @@ class PhindCodeLlamaLLM:
     provider:
       - "hf-inference" -> Hugging Face Inference API
       - "local"        -> transformers (CPU by default to avoid MPS crashes)
+      - "ollama"       -> Ollama local models (e.g., deepseek-coder)
     """
 
     def __init__(
@@ -41,6 +42,8 @@ class PhindCodeLlamaLLM:
 
         if self.provider == "local":
             self._init_local()
+        elif self.provider == "ollama":
+            self._init_ollama()
         else:
             self._init_remote()
 
@@ -117,6 +120,63 @@ class PhindCodeLlamaLLM:
         logging.info("✅ Local Transformers pipeline initialized.")
 
     # ---------------------------
+    # Ollama
+    # ---------------------------
+    def _init_ollama(self):
+        try:
+            import requests
+            self.ollama_url = _env("OLLAMA_URL", "http://localhost:11434")
+            self.ollama_model = self.model_name
+            
+            # Test connection to Ollama
+            response = requests.get(f"{self.ollama_url}/api/tags", timeout=30)
+            if response.status_code == 200:
+                logging.info(f"✅ Ollama connection established at {self.ollama_url}")
+                logging.info(f"Using model: {self.ollama_model}")
+                
+                # Check if the specific model is available and loaded
+                models_response = requests.get(f"{self.ollama_url}/api/tags", timeout=30)
+                if models_response.status_code == 200:
+                    models = models_response.json().get("models", [])
+                    model_found = any(model.get("name") == self.ollama_model for model in models)
+                    if model_found:
+                        logging.info(f"✅ Model {self.ollama_model} is available")
+                    else:
+                        logging.warning(f"⚠️  Model {self.ollama_model} not found in available models")
+                        logging.info("Available models: " + ", ".join([m.get("name", "unknown") for m in models]))
+                else:
+                    logging.warning("Could not check available models")
+                
+                # Warm up the model with a simple request to ensure it's loaded
+                try:
+                    warmup_payload = {
+                        "model": self.ollama_model,
+                        "prompt": "Hello",
+                        "stream": False,
+                        "options": {"num_predict": 10}
+                    }
+                    warmup_response = requests.post(
+                        f"{self.ollama_url}/api/generate",
+                        json=warmup_payload,
+                        timeout=60
+                    )
+                    if warmup_response.status_code == 200:
+                        logging.info(f"✅ Model {self.ollama_model} is loaded and responding")
+                    else:
+                        logging.warning(f"⚠️  Model warm-up failed with status {warmup_response.status_code}")
+                except Exception as warmup_e:
+                    logging.warning(f"⚠️  Model warm-up failed: {warmup_e}")
+                    
+            else:
+                raise Exception(f"Ollama API returned status {response.status_code}")
+                
+        except Exception as e:
+            logging.error(f"❌ Failed to connect to Ollama: {e}")
+            logging.error("Make sure Ollama is running: ollama serve")
+            logging.error(f"Make sure the model is available: ollama list")
+            raise
+
+    # ---------------------------
     # Public generate()
     # ---------------------------
     def generate(
@@ -131,6 +191,8 @@ class PhindCodeLlamaLLM:
 
         if self.provider == "local":
             return self._generate_local(messages, max_new_tokens, max_retries, temperature)
+        elif self.provider == "ollama":
+            return self._generate_ollama(messages, max_new_tokens, max_retries, temperature)
         else:
             return self._generate_remote(messages, max_new_tokens, max_retries, temperature)
 
@@ -246,7 +308,11 @@ class PhindCodeLlamaLLM:
                 logging.warning(f"Attempt {attempt + 1} failed: {e}")
 
             if attempt < max_retries - 1:
-                wait_time = (2 ** attempt) + random.uniform(0, 1)
+                # For Ollama, use longer delays to allow model to stabilize
+                if self.provider == "ollama":
+                    wait_time = (5 ** attempt) + random.uniform(2, 5)  # 5s, 25s, 125s + random
+                else:
+                    wait_time = (2 ** attempt) + random.uniform(0, 1)
                 logging.info(f"Retrying in {wait_time:.2f} seconds...")
                 time.sleep(wait_time)
             else:
@@ -254,6 +320,128 @@ class PhindCodeLlamaLLM:
                 return self._generate_fallback_content(messages)
 
         return "Error: All attempts failed"
+
+    # ---------------------------
+    # Ollama generation
+    # ---------------------------
+    def _generate_ollama(
+        self,
+        messages: List[Dict[str, str]],
+        max_new_tokens: int,
+        max_retries: int,
+        temperature: float,
+    ) -> str:
+        import requests
+        
+        last_exc: Optional[Exception] = None
+        for attempt in range(max_retries):
+            try:
+                # Convert chat messages to Ollama format
+                prompt = self._convert_messages_to_ollama_prompt(messages)
+                
+                payload = {
+                    "model": self.ollama_model,
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {
+                        "temperature": temperature,
+                        "num_predict": max_new_tokens,
+                    }
+                }
+                
+                response = requests.post(
+                    f"{self.ollama_url}/api/generate",
+                    json=payload,
+                    timeout=180
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    text = result.get("response", "")
+                    if text:
+                        return text.strip()
+                else:
+                    raise Exception(f"Ollama API returned status {response.status_code}: {response.text}")
+                    
+            except Exception as e:
+                last_exc = e
+                logging.warning(f"Attempt {attempt + 1} failed: {e}")
+                if attempt < max_retries - 1:
+                    wait_time = (2 ** attempt) + random.uniform(0, 1)
+                    logging.info(f"Retrying in {wait_time:.2f} seconds...")
+                    time.sleep(wait_time)
+                else:
+                    logging.error(f"All {max_retries} attempts failed. Last error: {e}")
+                    return self._generate_fallback_content(messages)
+        
+        return "Error: All attempts failed"
+
+    def _convert_messages_to_ollama_prompt(self, messages: List[Dict[str, str]]) -> str:
+        """Convert chat messages to Ollama prompt format."""
+        prompt_parts = []
+        
+        for message in messages:
+            role = message.get("role", "user")
+            content = message.get("content", "")
+            
+            if role == "system":
+                prompt_parts.append(f"System: {content}")
+            elif role == "user":
+                prompt_parts.append(f"User: {content}")
+            elif role == "assistant":
+                prompt_parts.append(f"Assistant: {content}")
+        
+        return "\n\n".join(prompt_parts) + "\n\nAssistant:"
+
+    def _clean_response(self, response: str) -> str:
+        """Clean verbose responses to extract only the code/documentation."""
+        if not response:
+            return response
+        
+        # Remove common verbose prefixes
+        verbose_prefixes = [
+            "Sure, I can provide you with",
+            "Here's a comprehensive",
+            "I'll help you create",
+            "Let me write",
+            "This is a simple example",
+            "Here's how you can",
+            "I'll generate",
+            "Sure, here's",
+            "Here's the",
+            "I can help you",
+            "Let me help you",
+            "I'll create",
+            "Here's what you need",
+            "This function",
+            "The function",
+            "Based on the code",
+            "Looking at the function",
+            "For this function",
+            "To test this function",
+            "To document this function"
+        ]
+        
+        cleaned = response
+        for prefix in verbose_prefixes:
+            if cleaned.startswith(prefix):
+                # Find the first line that looks like code (starts with import, def, class, etc.)
+                lines = cleaned.split('\n')
+                for i, line in enumerate(lines):
+                    if line.strip().startswith(('import ', 'from ', 'def ', 'class ', 'test_', 'describe(', 'it(', 'expect(', 'assert ', '#')):
+                        cleaned = '\n'.join(lines[i:])
+                        break
+        
+        # Remove trailing explanations
+        if '```' in cleaned:
+            # Extract content between code blocks
+            start = cleaned.find('```')
+            if start != -1:
+                end = cleaned.rfind('```')
+                if end > start:
+                    cleaned = cleaned[start+3:end].strip()
+        
+        return cleaned.strip()
 
     # ---------------------------
     # Fallback content
@@ -280,23 +468,34 @@ class PhindCodeLlamaLLM:
         function_code: str,
         diff_context: str = "",
         prompt_strategy: str = "diff-aware",
+        language: str = "python",
     ) -> str:
+        # Get test framework for the language
+        from .language_detector import LanguageDetector
+        test_frameworks = LanguageDetector.get_test_frameworks_for_language(language)
+        primary_framework = test_frameworks[0] if test_frameworks else "standard"
+        
+        system_prompt = f"""You are an expert {language} developer. Write ONLY the test code without any explanations, comments, or additional text. Generate clean, properly formatted {primary_framework} tests with correct syntax and indentation. Start directly with the test code."""
+        
         messages = [
-            {"role": "system", "content": "You are an expert Python developer who writes high-quality unit tests."},
+            {"role": "system", "content": system_prompt},
             {
                 "role": "user",
                 "content": (
-                    "Generate comprehensive unit tests for this function:\n\n"
+                    f"Write ONLY the test code for this {language} function using {primary_framework}:\n\n"
                     f"{function_code}\n\n"
-                    f"Diff context:\n{diff_context}"
+                    f"Diff context:\n{diff_context}\n\n"
+                    f"Generate the test code directly without any explanations or comments."
                 ),
             },
         ]
-        return self.generate(messages, max_new_tokens=512, max_retries=3, temperature=0.2)
+        response = self.generate(messages, max_new_tokens=512, max_retries=3, temperature=0.2)
+        return self._clean_response(response)
 
     def generate_documentation(self, function_code: str, function_name: str) -> str:
         messages = [
-            {"role": "system", "content": "You are an expert technical writer who creates clear documentation."},
-            {"role": "user", "content": f"Generate documentation for this function:\n\n{function_code}"},
+            {"role": "system", "content": "You are an expert technical writer. Write ONLY the documentation without any explanations, introductions, or additional text. Generate clean, properly formatted markdown documentation. Start directly with the documentation content."},
+            {"role": "user", "content": f"Write ONLY the documentation for this function:\n\n{function_code}\n\nGenerate the documentation directly without any explanations or comments."},
         ]
-        return self.generate(messages, max_new_tokens=400, max_retries=3, temperature=0.2)
+        response = self.generate(messages, max_new_tokens=400, max_retries=3, temperature=0.2)
+        return self._clean_response(response)
