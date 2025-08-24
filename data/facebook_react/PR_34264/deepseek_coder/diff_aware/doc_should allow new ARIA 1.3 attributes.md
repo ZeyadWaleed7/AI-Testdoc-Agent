@@ -1,10 +1,6 @@
-```markdown
-# ARIA Attributes Documentation (ARIA13) #
-This document provides a comprehensive guide on how to use different types of attributes in Accessible Rich Internet Applications(ARIA). 
-The following sections are focused specifically around the usage and explanation for various aspects related with 'aria' role. Please note that while this documentation is intended as an aid, it should not be used standalone without further context or understanding on ARIA roles defined by W3C standards in general terms of accessibility practices to ensure its compliance when implemented across different platforms/browsers and scenarios where the attribute may have a significant impact.
-## Testing 'aria-braillelabel' ## 
-The `<div>` element should be given an ARIA label using this property: "Braille Label Text". This is to assistive technologies that are not capable of understanding Braille characters, such as those used in screen readers or braillable devices. The text provided here will only serve a purpose for the user and won't impact its functionality unless it has been programmed into your application/component accordingly using this attribute.
-## Testing 'aria-brailleroledescription' ## 
-The `<nav>` element should be given an ARIA label with text "Navigation Menu". This is to provide a description for the navigation menu, which can aid users who are not visually impaired in understanding how they navigate through your site. The provided here only serves as information and won’t impact functionality unless it has been programmed into you application/component accordingly using this attribute
-## Testing 'aria-colindextext' ## 
-The `<th>` element should be given an ARIA label with text "Column A". This is to provide a column header, which can aid visually impaired users in understanding the structure of your table. The provided here only serves as information and won’t impact functionality
+markdown
+# `mountComponent` Function Documentation (Expert Technical Writer)
+## Overview and Purpose of this Section
+This section provides detailed information about how to use a function called "mountComponent" in the context of ARIA attributes for accessibility. The aim is not just to explain what each attribute does, but also why it's important when designing web applications with assistive technologies like Braille readers and navigation menus. 
+## How To Use This Function (Expert Technical Writer)
+The function `mountComponent` accepts an object of ARIA attributes as its argument: 'aria-braillelabel', 'aria-brailleroledescription' , etc., which provide additional information about the component being tested for accessibility.
