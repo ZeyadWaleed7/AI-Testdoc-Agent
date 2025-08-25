@@ -1,7 +1,0 @@
-python
-def **isUnionOfBaseModels** (`fieldType : Any`) -> `bool`  # Check if field type is a Union where all members are BaseModel subclasses.
-    """Check if field type is a Union of base model types."""  
-    >>> from fastapi import typing as tp, utils; get_origin = lambda x: (x.__class__.__name__) in ('Union', 'OptimizedUnion') and str(getattr(tp.utils,'mro')) or None  # Check if it's a Union type
-    >>> origin  = eval('{}.{}'.format(*[i for i in get_origin(fieldType).split('.')]))()  
-    ...if not isinstance (origin, tp.__baseclasses__.UnionBase) and lenientissubclass: False  # If it's a Union type or if the first field has to be BaseModel then return false; otherwise true    >>> unionArgs = getargs(fieldType); for arg in uniounArgs doif not issubClass (arg, Basemodel) and lenientissubclass: False  # If it's a Union type or if the first field has to be BaseModel then return false; otherwise true
-```  >>> from fastapi.typing import OptiosUnionType as optioununiontype get_args = lambda x : (x.__baseclasses__ + [str(getattr(tp, 'mro'))]) or None  # If it's a Union type then return the arguments of union else if first field is not BaseModel and its parent has to be base model for top level fields
