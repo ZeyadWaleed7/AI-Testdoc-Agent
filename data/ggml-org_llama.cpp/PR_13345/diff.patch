@@ -1,0 +1,99 @@
+From 6d6877d3634427556a8641a7213f8e1bc959024e Mon Sep 17 00:00:00 2001
+From: DocShotgun <126566557+DocShotgun@users.noreply.github.com>
+Date: Tue, 6 May 2025 09:43:41 -0700
+Subject: [PATCH 1/4] sampling: make nsigma == 0 a no-op
+
+---
+ src/llama-sampling.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/llama-sampling.cpp b/src/llama-sampling.cpp
+index 0c9c6a3102929..d7128ecdad432 100644
+--- a/src/llama-sampling.cpp
++++ b/src/llama-sampling.cpp
+@@ -1750,7 +1750,7 @@ static const char * llama_sampler_top_n_sigma_name(const struct llama_sampler *
+ static void llama_sampler_top_n_sigma_apply(struct llama_sampler * smpl, llama_token_data_array * cur_p) {
+     const auto * ctx = (llama_sampler_top_n_sigma *) smpl->ctx;
+ 
+-    if (ctx->n < 0.0f) {
++    if (ctx->n <= 0.0f) {
+         return;
+     }
+ 
+
+From 62e51ab286b708c4ecb1f6bdecb5c2583c0061a6 Mon Sep 17 00:00:00 2001
+From: DocShotgun <126566557+DocShotgun@users.noreply.github.com>
+Date: Tue, 6 May 2025 10:54:36 -0700
+Subject: [PATCH 2/4] sampling: short-circuit nsigma when cur_p <= 1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+* avoid running nsigma when only a single candidate remains
+
+Co-authored-by: Sigbjørn Skjæret <sigbjorn.skjaeret@scala.com>
+---
+ src/llama-sampling.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/llama-sampling.cpp b/src/llama-sampling.cpp
+index d7128ecdad432..e8ff2c5a7ea6f 100644
+--- a/src/llama-sampling.cpp
++++ b/src/llama-sampling.cpp
+@@ -1750,7 +1750,7 @@ static const char * llama_sampler_top_n_sigma_name(const struct llama_sampler *
+ static void llama_sampler_top_n_sigma_apply(struct llama_sampler * smpl, llama_token_data_array * cur_p) {
+     const auto * ctx = (llama_sampler_top_n_sigma *) smpl->ctx;
+ 
+-    if (ctx->n <= 0.0f) {
++    if (ctx->n <= 0.0f || cur_p->size <= 1) {
+         return;
+     }
+ 
+
+From 699256aae3f0b78f303d94af96f4b09ccf2d9006 Mon Sep 17 00:00:00 2001
+From: DocShotgun <126566557+DocShotgun@users.noreply.github.com>
+Date: Tue, 6 May 2025 11:45:45 -0700
+Subject: [PATCH 3/4] sampling: fix top_n_sigma == 0 test to reflect new
+ behavior * adjust the sampling test to reflect top_n_sigma == 0 behaving as
+ no-op rather than greedy decoding
+
+---
+ tests/test-sampling.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/test-sampling.cpp b/tests/test-sampling.cpp
+index f1f87d454d464..ec9a13e5e70fd 100644
+--- a/tests/test-sampling.cpp
++++ b/tests/test-sampling.cpp
+@@ -360,7 +360,7 @@ int main(void) {
+     test_dry({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0, 1, 2, 3, 4, 0, 1}, {0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, 1.0f, 1.1f, 4, 7, {});
+ 
+     test_top_n_sigma({0.1f, 0.2f, 0.3f, 0.4f}, {0.571429f, 0.428571f, 0.0f, 0.0f}, 1.00f);
+-    test_top_n_sigma({0.1f, 0.2f, 0.3f, 0.4f}, {1.0f, 0.0f, 0.0f, 0.0f}, 0.00f);
++    test_top_n_sigma({0.1f, 0.2f, 0.3f, 0.4f}, {0.4f, 0.3f, 0.2f, 0.1f}, 0.00f);
+     test_top_n_sigma({0.1f, 0.2f, 0.3f, 0.4f}, {0.4f, 0.3f, 0.2f, 0.1f}, 3.00f);
+ 
+     test_sampler_queue(10000, "k", 10000, 1.0f, 1.0f);
+
+From 91644d8a50704ff357155222b7f2b4c8c959dccf Mon Sep 17 00:00:00 2001
+From: DocShotgun <126566557+DocShotgun@users.noreply.github.com>
+Date: Tue, 6 May 2025 12:54:52 -0700
+Subject: [PATCH 4/4] sampling: additional context to top_n_sigma test change
+
+---
+ tests/test-sampling.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/test-sampling.cpp b/tests/test-sampling.cpp
+index ec9a13e5e70fd..60ac62b385f35 100644
+--- a/tests/test-sampling.cpp
++++ b/tests/test-sampling.cpp
+@@ -360,7 +360,7 @@ int main(void) {
+     test_dry({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0, 1, 2, 3, 4, 0, 1}, {0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, 1.0f, 1.1f, 4, 7, {});
+ 
+     test_top_n_sigma({0.1f, 0.2f, 0.3f, 0.4f}, {0.571429f, 0.428571f, 0.0f, 0.0f}, 1.00f);
+-    test_top_n_sigma({0.1f, 0.2f, 0.3f, 0.4f}, {0.4f, 0.3f, 0.2f, 0.1f}, 0.00f);
++    test_top_n_sigma({0.1f, 0.2f, 0.3f, 0.4f}, {0.4f, 0.3f, 0.2f, 0.1f}, 0.00f); // top_n_sigma == 0 now represents a no-op rather than greedy decoding as of PR#13345
+     test_top_n_sigma({0.1f, 0.2f, 0.3f, 0.4f}, {0.4f, 0.3f, 0.2f, 0.1f}, 3.00f);
+ 
+     test_sampler_queue(10000, "k", 10000, 1.0f, 1.0f);

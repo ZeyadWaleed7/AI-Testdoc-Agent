@@ -1,0 +1,48 @@
+{
+  "ggml/src/gguf.cpp": {
+    "status": "modified",
+    "patch": "@@ -347,25 +347,28 @@ struct gguf_context * gguf_init_from_file_impl(FILE * file, struct gguf_init_par\n     int64_t n_tensors = 0;\n \n     if (ok && gr.read(ctx->version)) {\n+        if (ok && ctx->version == 0) {\n+            GGML_LOG_ERROR(\"%s: bad GGUF version: %\" PRIu32 \"\\n\", __func__, ctx->version);\n+            ok = false;\n+        }\n+\n         /*\n          * bit layout is different when reading non-native endian models.\n          * assuming that the GGUF version is 3, the non-native endian model\n          * would read it as 0x30000000. we can use the AND operation against\n          * the last 4 hexadecimal digits to check if the model is the same\n          * endianness as the host system.\n         */\n-        if ((ctx->version & 0x0000FFFF) == 0x00000000) {\n+        if (ok && (ctx->version & 0x0000FFFF) == 0x00000000) {\n             GGML_LOG_ERROR(\"%s: failed to load model: this GGUF file version %\" PRIu32 \" is extremely large, is there a mismatch between the host and model endianness?\\n\", __func__, ctx->version);\n-            gguf_free(ctx);\n-            return nullptr;\n+            ok = false;\n         }\n \n-        GGML_ASSERT(ctx->version > 0 && ctx->version <= 65535);\n-        if (ctx->version == 1) {\n+        if (ok && ctx->version == 1) {\n             GGML_LOG_ERROR(\"%s: GGUFv1 is no longer supported, please use a more up-to-date version\\n\", __func__);\n             ok = false;\n         }\n-        if (ctx->version > GGUF_VERSION) {\n+        if (ok && ctx->version > GGUF_VERSION) {\n             GGML_LOG_ERROR(\"%s: this GGUF file is version %\" PRIu32 \" but this software only supports up to version %d\\n\",\n                 __func__, ctx->version, GGUF_VERSION);\n             ok = false;",
+    "additions": 9,
+    "deletions": 6,
+    "changes": 15,
+    "language": "cpp",
+    "imports": [
+      "#include \"ggml.h\"",
+      "#include \"ggml-backend.h\"",
+      "#include \"ggml-impl.h\"",
+      "#include \"gguf.h\"",
+      "#include <cinttypes>",
+      "#include <cstddef>",
+      "#include <cstdint>",
+      "#include <cstdio>",
+      "#include <cstdlib>",
+      "#include <cstring>"
+    ],
+    "full_content": "#include \"ggml.h\"\n#include \"ggml-backend.h\"\n#include \"ggml-impl.h\"\n#include \"gguf.h\"\n\n#include <cinttypes>\n#include <cstddef>\n#include <cstdint>\n#include <cstdio>\n#include <cstdlib>\n#include <cstring>\n#include <map>\n#include <new>\n#include <stdexcept>\n#include <string>\n#include <vector>\n\ntemplate <typename T>\nstruct type_to_gguf_type;\n\ntemplate <>\nstruct type_to_gguf_type<uint8_t> {\n    static constexpr enum gguf_type value = GGUF_TYPE_UINT8;\n};\n\ntemplate <>\nstruct type_to_gguf_type<int8_t> {\n    static constexpr enum gguf_type value = GGUF_TYPE_INT8;\n};\n\ntemplate <>\nstruct type_to_gguf_type<uint16_t> {\n    static constexpr enum gguf_type value = GGUF_TYPE_UINT16;\n};\n\ntemplate <>\nstruct type_to_gguf_type<int16_t> {\n    static constexpr enum gguf_type value = GGUF_TYPE_INT16;\n};\n\ntemplate <>\nstruct type_to_gguf_type<uint32_t> {\n    static constexpr enum gguf_type value = GGUF_TYPE_UINT32;\n};\n\ntemplate <>\nstruct type_to_gguf_type<int32_t> {\n    static constexpr enum gguf_type value = GGUF_TYPE_INT32;\n};\n\ntemplate <>\nstruct type_to_gguf_type<float> {\n    static constexpr enum gguf_type value = GGUF_TYPE_FLOAT32;\n};\n\ntemplate <>\nstruct type_to_gguf_type<bool> {\n    static constexpr enum gguf_type value = GGUF_TYPE_BOOL;\n};\n\ntemplate <>\nstruct type_to_gguf_type<std::string> {\n    static constexpr enum gguf_type value = GGUF_TYPE_STRING;\n};\n\ntemplate <>\nstruct type_to_gguf_type<uint64_t> {\n    static constexpr enum gguf_type value = GGUF_TYPE_UINT64;\n};\n\ntemplate <>\nstruct type_to_gguf_type<int64_t> {\n    static constexpr enum gguf_type value = GGUF_TYPE_INT64;\n};\n\ntemplate <>\nstruct type_to_gguf_type<double> {\n    static constexpr enum gguf_type value = GGUF_TYPE_FLOAT64;\n};\n\nstatic const std::map<gguf_type, size_t> GGUF_TYPE_SIZE = {\n    {GGUF_TYPE_UINT8,   sizeof(uint8_t)},\n    {GGUF_TYPE_INT8,    sizeof(int8_t)},\n    {GGUF_TYPE_UINT16,  sizeof(uint16_t)},\n    {GGUF_TYPE_INT16,   sizeof(int16_t)},\n    {GGUF_TYPE_UINT32,  sizeof(uint32_t)},\n    {GGUF_TYPE_INT32,   sizeo",
+    "raw_url": "https://github.com/ggml-org/llama.cpp/raw/959ac482627fffa734914d87769d58be20b3c5e5/ggml%2Fsrc%2Fgguf.cpp",
+    "is_test_file": false
+  },
+  "tests/test-gguf.cpp": {
+    "status": "modified",
+    "patch": "@@ -16,6 +16,7 @@ constexpr int offset_has_data    = 3000;\n \n enum handcrafted_file_type {\n     HANDCRAFTED_HEADER_BAD_MAGIC           =  10,\n+    HANDCRAFTED_HEADER_BAD_VERSION_0       =  15,\n     HANDCRAFTED_HEADER_BAD_VERSION_1       =  20,\n     HANDCRAFTED_HEADER_BAD_VERSION_FUTURE  =  30,\n     HANDCRAFTED_HEADER_BAD_N_TENSORS       =  40,\n@@ -51,6 +52,7 @@ enum handcrafted_file_type {\n static std::string handcrafted_file_type_name(const enum handcrafted_file_type hft) {\n     switch (hft) {\n         case HANDCRAFTED_HEADER_BAD_MAGIC:           return \"HEADER_BAD_MAGIC\";\n+        case HANDCRAFTED_HEADER_BAD_VERSION_0:       return \"HEADER_BAD_VERSION_0\";\n         case HANDCRAFTED_HEADER_BAD_VERSION_1:       return \"HEADER_BAD_VERSION_1\";\n         case HANDCRAFTED_HEADER_BAD_VERSION_FUTURE:  return \"HEADER_BAD_VERSION_FUTURE\";\n         case HANDCRAFTED_HEADER_BAD_N_KV:            return \"HEADER_BAD_N_KV\";\n@@ -171,7 +173,10 @@ static FILE * get_handcrafted_file(const unsigned int seed, const enum handcraft\n         helper_write(file, GGUF_MAGIC, 4);\n     }\n \n-    if (hft == HANDCRAFTED_HEADER_BAD_VERSION_1) {\n+    if (hft == HANDCRAFTED_HEADER_BAD_VERSION_0) {\n+        const uint32_t version = 0;\n+        helper_write(file, version);\n+    } else if (hft == HANDCRAFTED_HEADER_BAD_VERSION_1) {\n         const uint32_t version = 1;\n         helper_write(file, version);\n     } else if (hft == HANDCRAFTED_HEADER_BAD_VERSION_FUTURE) {\n@@ -660,6 +665,7 @@ static std::pair<int, int> test_handcrafted_file(const unsigned int seed) {\n \n     const std::vector<handcrafted_file_type> hfts = {\n         HANDCRAFTED_HEADER_BAD_MAGIC,\n+        HANDCRAFTED_HEADER_BAD_VERSION_0,\n         HANDCRAFTED_HEADER_BAD_VERSION_1,\n         HANDCRAFTED_HEADER_BAD_VERSION_FUTURE,\n         HANDCRAFTED_HEADER_BAD_N_KV,",
+    "additions": 7,
+    "deletions": 1,
+    "changes": 8,
+    "language": "cpp",
+    "imports": [
+      "#include \"ggml.h\"",
+      "#include \"ggml-backend.h\"",
+      "#include \"../ggml/src/ggml-impl.h\"",
+      "#include <algorithm>",
+      "#include <array>",
+      "#include <cstdint>",
+      "#include <cstdio>",
+      "#include <random>",
+      "#include <string>",
+      "#include <vector>"
+    ],
+    "full_content": "#include \"ggml.h\"\n#include \"ggml-backend.h\"\n#include \"../ggml/src/ggml-impl.h\"\n\n#include <algorithm>\n#include <array>\n#include <cstdint>\n#include <cstdio>\n#include <random>\n#include <string>\n#include <vector>\n\nconstexpr int offset_has_kv      = 1000;\nconstexpr int offset_has_tensors = 2000;\nconstexpr int offset_has_data    = 3000;\n\nenum handcrafted_file_type {\n    HANDCRAFTED_HEADER_BAD_MAGIC           =  10,\n    HANDCRAFTED_HEADER_BAD_VERSION_0       =  15,\n    HANDCRAFTED_HEADER_BAD_VERSION_1       =  20,\n    HANDCRAFTED_HEADER_BAD_VERSION_FUTURE  =  30,\n    HANDCRAFTED_HEADER_BAD_N_TENSORS       =  40,\n    HANDCRAFTED_HEADER_BAD_N_KV            =  50,\n    HANDCRAFTED_HEADER_EMPTY               = 800,\n\n    HANDCRAFTED_KV_BAD_KEY_SIZE            =  10 + offset_has_kv,\n    HANDCRAFTED_KV_BAD_TYPE                =  20 + offset_has_kv,\n    // HANDCRAFTED_KV_BAD_VALUE_SIZE          =  30 + offset_has_kv, // removed because it can result in allocations > 1 TB (default sanitizer limit)\n    HANDCRAFTED_KV_DUPLICATE_KEY           =  40 + offset_has_kv,\n    HANDCRAFTED_KV_BAD_ALIGN               =  50 + offset_has_kv,\n    HANDCRAFTED_KV_SUCCESS                 = 800 + offset_has_kv,\n\n    HANDCRAFTED_TENSORS_BAD_NAME_SIZE      =  10 + offset_has_tensors,\n    HANDCRAFTED_TENSORS_BAD_N_DIMS         =  20 + offset_has_tensors,\n    HANDCRAFTED_TENSORS_BAD_SHAPE          =  30 + offset_has_tensors,\n    HANDCRAFTED_TENSORS_NE_TOO_BIG         =  40 + offset_has_tensors,\n    HANDCRAFTED_TENSORS_BAD_TYPE           =  50 + offset_has_tensors,\n    HANDCRAFTED_TENSORS_BAD_OFFSET         =  60 + offset_has_tensors,\n    HANDCRAFTED_TENSORS_DUPLICATE_NAME     =  70 + offset_has_tensors,\n    HANDCRAFTED_TENSORS_BAD_ALIGN          =  75 + offset_has_tensors,\n    HANDCRAFTED_TENSORS_INCONSISTENT_ALIGN =  80 + offset_has_tensors,\n    HANDCRAFTED_TENSORS_SUCCESS            = 800 + offset_has_tensors,\n    HANDCRAFTED_TENSORS_CUSTOM_ALIGN       = 810 + offset_has_tensors,\n\n    HANDCRAFTED_DATA_NO",
+    "raw_url": "https://github.com/ggml-org/llama.cpp/raw/959ac482627fffa734914d87769d58be20b3c5e5/tests%2Ftest-gguf.cpp",
+    "is_test_file": true
+  }
+}

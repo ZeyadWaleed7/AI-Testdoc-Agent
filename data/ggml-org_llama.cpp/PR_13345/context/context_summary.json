@@ -1,0 +1,25 @@
+{
+  "pr_title": "sampling: make top_n_sigma no-op at <=0 rather than <0",
+  "total_files_changed": 2,
+  "languages": [
+    "cpp"
+  ],
+  "main_changes": [
+    {
+      "file": "src/llama-sampling.cpp",
+      "status": "modified",
+      "changes": 2,
+      "language": "cpp",
+      "is_test_file": false
+    },
+    {
+      "file": "tests/test-sampling.cpp",
+      "status": "modified",
+      "changes": 2,
+      "language": "cpp",
+      "is_test_file": true
+    }
+  ],
+  "existing_test_files": 1,
+  "test_files_saved": 1
+}

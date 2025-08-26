@@ -1,0 +1,25 @@
+{
+  "pr_title": "gguf: fix failure on version == 0",
+  "total_files_changed": 2,
+  "languages": [
+    "cpp"
+  ],
+  "main_changes": [
+    {
+      "file": "ggml/src/gguf.cpp",
+      "status": "modified",
+      "changes": 15,
+      "language": "cpp",
+      "is_test_file": false
+    },
+    {
+      "file": "tests/test-gguf.cpp",
+      "status": "modified",
+      "changes": 8,
+      "language": "cpp",
+      "is_test_file": true
+    }
+  ],
+  "existing_test_files": 1,
+  "test_files_saved": 1
+}

@@ -1,0 +1,26 @@
+diff --git a/src/llama-sampling.cpp b/src/llama-sampling.cpp
+index 0c9c6a3102929..e8ff2c5a7ea6f 100644
+--- a/src/llama-sampling.cpp
++++ b/src/llama-sampling.cpp
+@@ -1750,7 +1750,7 @@ static const char * llama_sampler_top_n_sigma_name(const struct llama_sampler *
+ static void llama_sampler_top_n_sigma_apply(struct llama_sampler * smpl, llama_token_data_array * cur_p) {
+     const auto * ctx = (llama_sampler_top_n_sigma *) smpl->ctx;
+ 
+-    if (ctx->n < 0.0f) {
++    if (ctx->n <= 0.0f || cur_p->size <= 1) {
+         return;
+     }
+ 
+diff --git a/tests/test-sampling.cpp b/tests/test-sampling.cpp
+index f1f87d454d464..60ac62b385f35 100644
+--- a/tests/test-sampling.cpp
++++ b/tests/test-sampling.cpp
+@@ -360,7 +360,7 @@ int main(void) {
+     test_dry({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0, 1, 2, 3, 4, 0, 1}, {0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, 1.0f, 1.1f, 4, 7, {});
+ 
+     test_top_n_sigma({0.1f, 0.2f, 0.3f, 0.4f}, {0.571429f, 0.428571f, 0.0f, 0.0f}, 1.00f);
+-    test_top_n_sigma({0.1f, 0.2f, 0.3f, 0.4f}, {1.0f, 0.0f, 0.0f, 0.0f}, 0.00f);
++    test_top_n_sigma({0.1f, 0.2f, 0.3f, 0.4f}, {0.4f, 0.3f, 0.2f, 0.1f}, 0.00f); // top_n_sigma == 0 now represents a no-op rather than greedy decoding as of PR#13345
+     test_top_n_sigma({0.1f, 0.2f, 0.3f, 0.4f}, {0.4f, 0.3f, 0.2f, 0.1f}, 3.00f);
+ 
+     test_sampler_queue(10000, "k", 10000, 1.0f, 1.0f);

@@ -1,0 +1,6 @@
+{
+  "title": "Adding chat template support for Granite model",
+  "description": "This adds support for the chat template Granite model. It also modified build-xcframework.sh to include libcommon.a and supporting header files so the built framework can be used by a Swift wrapper for template processing. ",
+  "base_branch": "master",
+  "head_branch": "master"
+}

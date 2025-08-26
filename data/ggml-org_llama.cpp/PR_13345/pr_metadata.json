@@ -1,0 +1,6 @@
+{
+  "title": "sampling: make top_n_sigma no-op at <=0 rather than <0",
+  "description": "This changes the behavior of the recently-added `top_n_sigma` sampler to a short-circuit no-op state at values <= 0 rather than < 0. The rationale for this change is as follows:\r\n\r\n* The current behavior of `top_n_sigma` == 0 is redundant as it is a more roundabout way to achieve greedy decoding, which already has other means of being specified, i.e. `top_k` == 1\r\n* `top_n_sigma` == 0 represents no-op rather than greedy decoding in other existing tooling (i.e. [text-generation-webui](https://github.com/oobabooga/text-generation-webui/blob/ace8afb825c80925ed21ab26dbf66b538ab06285/modules/sampler_hijack.py#L570), [aphrodite-engine](https://github.com/aphrodite-engine/aphrodite-engine/blob/22427602ebd45652a0ea323dad3959430c6db352/aphrodite/common/sampling_params.py#L151-L155), [koboldcpp](https://github.com/LostRuins/koboldcpp/blob/17cbf9fd49418248210e97136b9b2eaf00d2c8b2/gpttype_adapter.cpp#L1415), [YALS](https://github.com/theroyallab/YALS/blob/7008a12e33c9bb9e9b9e549ac61372ec95279744/bindings/bindings.ts#L567)), so this would keep the interface consistent for frontend developers",
+  "base_branch": "master",
+  "head_branch": "master"
+}
