@@ -1,0 +1,48 @@
+{
+  "pr_title": "Adding chat template support for Granite model",
+  "total_files_changed": 6,
+  "languages": [
+    "cpp",
+    "h",
+    "jinja"
+  ],
+  "main_changes": [
+    {
+      "file": "common/chat-parser.cpp",
+      "status": "modified",
+      "changes": 10,
+      "language": "cpp",
+      "is_test_file": false
+    },
+    {
+      "file": "common/chat.cpp",
+      "status": "modified",
+      "changes": 129,
+      "language": "cpp",
+      "is_test_file": false
+    },
+    {
+      "file": "common/chat.h",
+      "status": "modified",
+      "changes": 1,
+      "language": "h",
+      "is_test_file": false
+    },
+    {
+      "file": "common/common.h",
+      "status": "modified",
+      "changes": 1,
+      "language": "h",
+      "is_test_file": false
+    },
+    {
+      "file": "models/templates/ibm-granite-granite-3.3-2B-Instruct.jinja",
+      "status": "added",
+      "changes": 59,
+      "language": "jinja",
+      "is_test_file": false
+    }
+  ],
+  "existing_test_files": 1,
+  "test_files_saved": 1
+}

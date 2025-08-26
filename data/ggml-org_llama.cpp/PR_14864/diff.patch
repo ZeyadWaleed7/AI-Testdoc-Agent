@@ -1,0 +1,568 @@
+From 13a8ecc993d430d32d8713c279efbe7ab46665a8 Mon Sep 17 00:00:00 2001
+From: Sachin Desai <sdesai@salesforce.com>
+Date: Wed, 23 Jul 2025 15:21:25 -0700
+Subject: [PATCH 1/7] Adding support for Granite chat template. Updating build
+ for xcframework to include libcommon.a to expose chat template processing
+
+---
+ build-xcframework.sh |   4 ++
+ common/chat.cpp      | 127 +++++++++++++++++++++++++++++++++++++++++++
+ common/chat.h        |   1 +
+ 3 files changed, 132 insertions(+)
+
+diff --git a/build-xcframework.sh b/build-xcframework.sh
+index f813984db9dbd..a4864c6496858 100755
+--- a/build-xcframework.sh
++++ b/build-xcframework.sh
+@@ -116,6 +116,7 @@ setup_framework_structure() {
+ 
+     # Copy all required headers (common for all platforms)
+     cp include/llama.h             ${header_path}
++    cp include/llama-cpp.h         ${header_path}
+     cp ggml/include/ggml.h         ${header_path}
+     cp ggml/include/ggml-opt.h     ${header_path}
+     cp ggml/include/ggml-alloc.h   ${header_path}
+@@ -124,6 +125,8 @@ setup_framework_structure() {
+     cp ggml/include/ggml-cpu.h     ${header_path}
+     cp ggml/include/ggml-blas.h    ${header_path}
+     cp ggml/include/gguf.h         ${header_path}
++    cp common/common.h             ${header_path}
++    cp common/chat.h               ${header_path}
+ 
+     # Create module map (common for all platforms)
+     cat > ${module_path}module.modulemap << EOF
+@@ -247,6 +250,7 @@ combine_static_libraries() {
+ 
+     local libs=(
+         "${base_dir}/${build_dir}/src/${release_dir}/libllama.a"
++        "${base_dir}/${build_dir}/common/${release_dir}/libcommon.a"
+         "${base_dir}/${build_dir}/ggml/src/${release_dir}/libggml.a"
+         "${base_dir}/${build_dir}/ggml/src/${release_dir}/libggml-base.a"
+         "${base_dir}/${build_dir}/ggml/src/${release_dir}/libggml-cpu.a"
+diff --git a/common/chat.cpp b/common/chat.cpp
+index 114dbfccdbfe7..6e7ca23b94738 100644
+--- a/common/chat.cpp
++++ b/common/chat.cpp
+@@ -1700,6 +1700,125 @@ static void common_chat_parse_hermes_2_pro(common_chat_msg_parser & builder) {
+     }
+ }
+ 
++static common_chat_params common_chat_params_init_granite(const common_chat_template & tmpl, const struct templates_params & inputs) {
++    common_chat_params data;
++
++    // Pass thinking context for Granite template
++    json additional_context = {
++        {"thinking", inputs.enable_thinking},
++    };
++
++    data.prompt = apply(tmpl, inputs, /* messages_override= */ std::nullopt, /* tools_override= */ std::nullopt, additional_context);
++
++    if (string_ends_with(data.prompt, "<think>\n") || string_ends_with(data.prompt, "<think>")) {
++        if (!inputs.enable_thinking) {
++            data.prompt += "</think>";
++        } else {
++            data.thinking_forced_open = true;
++        }
++    }
++
++    if (!inputs.tools.is_null()) {
++        data.format = COMMON_CHAT_FORMAT_GRANITE;
++        // Granite uses <|tool_call|> followed by JSON list
++        data.grammar_lazy = inputs.tool_choice != COMMON_CHAT_TOOL_CHOICE_REQUIRED;
++        data.grammar = build_grammar([&](const common_grammar_builder & builder) {
++            std::vector<std::string> tool_rules;
++            foreach_function(inputs.tools, [&](const json & tool) {
++                const auto & function = tool.at("function");
++                std::string name = function.at("name");
++                auto parameters = function.at("parameters");
++                builder.resolve_refs(parameters);
++                tool_rules.push_back(builder.add_rule(name + "-call", builder.add_schema(name +
++"-args", {
++                    {"type", "object"},
++                    {"properties", {
++                        {"name", {{"const", name}}},
++                        {"arguments", parameters},
++                    }},
++                    {"required", json::array({"name", "arguments"})},
++                })));
++            });
++
++            auto tool_call = builder.add_rule("tool_call", string_join(tool_rules, " | "));
++            auto tool_list = builder.add_rule("tool_list", "\"[\" space " + tool_call + " (\",\" space " + tool_call + ")* space \"]\"");
++
++            if (data.thinking_forced_open) {
++                builder.add_rule("root", "\"</think>\" space \"<response>\" space [^<]* \"</response>\" space \"<|tool_call|>\" space " + tool_list);
++            } else {
++                builder.add_rule("root", "\"<|tool_call|>\" space " + tool_list);
++            }
++
++            data.grammar_triggers.push_back({
++                COMMON_GRAMMAR_TRIGGER_TYPE_WORD,
++                "<|tool_call|>"
++            });
++
++            data.preserved_tokens = {
++                "<think>",
++                "</think>",
++                "<response>",
++                "</response>",
++                "<|tool_call|>",
++            };
++        });
++    } else {
++        data.format = COMMON_CHAT_FORMAT_CONTENT_ONLY;
++        // Handle thinking tags for non-tool responses
++        if (data.thinking_forced_open && inputs.enable_thinking) {
++            data.grammar_lazy = false;
++            data.grammar = build_grammar([&](const common_grammar_builder & builder) {
++                builder.add_rule("root", "\"</think>\" space \"<response>\" space .* \"</response>\" space");
++            });
++            data.preserved_tokens = {
++                "<think>",
++                "</think>",
++            "<response>",
++                "</response>",
++            };
++        }
++    }
++
++    return data;
++}
++
++static void common_chat_parse_granite(common_chat_msg_parser & builder) {
++    // Parse thinking tags
++    builder.try_parse_reasoning("<think>", "</think>");
++
++    // Parse response tags using regex
++    static const common_regex response_regex("<response>([\\s\\S]*?)</response>");
++    if (auto res = builder.try_find_regex(response_regex)) {
++        // Extract the content between the tags (capture group 1)
++        auto content = builder.str(res->groups[1]);
++        builder.add_content(content);
++        builder.move_to(res->groups[0].end);
++    }
++
++    if (!builder.syntax().parse_tool_calls) {
++        builder.add_content(builder.consume_rest());
++        return;
++    }
++
++    // Look for tool calls
++    static const common_regex tool_call_regex(regex_escape("<|tool_call|>"));
++    if (auto res = builder.try_find_regex(tool_call_regex)) {
++        builder.move_to(res->groups[0].end);
++
++        // Expect JSON array of tool calls
++        auto tool_calls_data = builder.consume_json();
++        if (tool_calls_data.json.is_array()) {
++            if (!builder.add_tool_calls(tool_calls_data.json)) {
++                builder.add_content("<|tool_call|>" + tool_calls_data.json.dump());
++            }
++        } else {
++            builder.add_content("<|tool_call|>" + tool_calls_data.json.dump());
++        }
++    } else {
++        builder.add_content(builder.consume_rest());
++    }
++}
++
+ static common_chat_params common_chat_params_init_without_tools(const common_chat_template & tmpl, const struct templates_params & inputs) {
+     common_chat_params data;
+     data.prompt = apply(tmpl, inputs);
+@@ -1769,6 +1888,11 @@ static common_chat_params common_chat_templates_apply_jinja(
+         return common_chat_params_init_command_r7b(tmpl, params);
+     }
+ 
++    // Granite (IBM) - detects thinking support
++    if (src.find("elif thinking") != std::string::npos && src.find("<think>") != std::string::npos) {
++        return common_chat_params_init_granite(tmpl, params);
++    }
++
+     // Hermes 2/3 Pro, Qwen 2.5 Instruct (w/ tools)
+     if (src.find("<tool_call>") != std::string::npos && params.json_schema.is_null()) {
+         return common_chat_params_init_hermes_2_pro(tmpl, params);
+@@ -1925,6 +2049,9 @@ static void common_chat_parse(common_chat_msg_parser & builder) {
+         case COMMON_CHAT_FORMAT_COMMAND_R7B:
+             common_chat_parse_command_r7b(builder);
+             break;
++        case COMMON_CHAT_FORMAT_GRANITE:
++            common_chat_parse_granite(builder);
++            break;
+         default:
+             throw std::runtime_error(std::string("Unsupported format: ") + common_chat_format_name(builder.syntax().format));
+     }
+diff --git a/common/chat.h b/common/chat.h
+index ca807c145ee82..29a40483282a9 100644
+--- a/common/chat.h
++++ b/common/chat.h
+@@ -109,6 +109,7 @@ enum common_chat_format {
+     COMMON_CHAT_FORMAT_FUNCTIONARY_V3_1_LLAMA_3_1,
+     COMMON_CHAT_FORMAT_HERMES_2_PRO,
+     COMMON_CHAT_FORMAT_COMMAND_R7B,
++    COMMON_CHAT_FORMAT_GRANITE,
+ 
+     COMMON_CHAT_FORMAT_COUNT, // Not a format, just the # formats
+ };
+
+From 1ed1980bf2e5968be38148b30cfa327e30ba8039 Mon Sep 17 00:00:00 2001
+From: Sachin Desai <sdesai@salesforce.com>
+Date: Thu, 24 Jul 2025 11:15:52 -0700
+Subject: [PATCH 2/7] Add test case for granite
+
+---
+ common/chat-parser.cpp | 10 +++++++-
+ common/chat.cpp        |  7 ++++--
+ common/common.h        |  1 +
+ tests/test-chat.cpp    | 53 ++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 68 insertions(+), 3 deletions(-)
+
+diff --git a/common/chat-parser.cpp b/common/chat-parser.cpp
+index 18a30e49aa578..96ba8f533ef1b 100644
+--- a/common/chat-parser.cpp
++++ b/common/chat-parser.cpp
+@@ -55,7 +55,15 @@ bool common_chat_msg_parser::add_tool_call(const std::string & name, const std::
+ bool common_chat_msg_parser::add_tool_call(const json & tool_call) {
+     std::string name = tool_call.contains("name") ? tool_call.at("name") : "";
+     std::string id = tool_call.contains("id") ? tool_call.at("id") : "";
+-    std::string arguments = tool_call.contains("arguments") ? tool_call.at("arguments") : "";
++    std::string arguments = "";
++    if (tool_call.contains("arguments")) {
++        if (tool_call.at("arguments").is_object()) {
++            arguments = tool_call.at("arguments").dump();
++        } else {
++            arguments = tool_call.at("arguments");
++        }
++    }
++
+     return add_tool_call(name, id, arguments);
+ }
+ 
+diff --git a/common/chat.cpp b/common/chat.cpp
+index 6e7ca23b94738..74d5d7bb64ea3 100644
+--- a/common/chat.cpp
++++ b/common/chat.cpp
+@@ -592,6 +592,8 @@ const char * common_chat_format_name(common_chat_format format) {
+         case COMMON_CHAT_FORMAT_FUNCTIONARY_V3_1_LLAMA_3_1: return "Functionary v3.1 Llama 3.1";
+         case COMMON_CHAT_FORMAT_HERMES_2_PRO: return "Hermes 2 Pro";
+         case COMMON_CHAT_FORMAT_COMMAND_R7B: return "Command R7B";
++        case COMMON_CHAT_FORMAT_GRANITE: return "Granite";
++
+         default:
+             throw std::runtime_error("Unknown chat format");
+     }
+@@ -602,6 +604,7 @@ const char * common_reasoning_format_name(common_reasoning_format format) {
+         case COMMON_REASONING_FORMAT_NONE:     return "none";
+         case COMMON_REASONING_FORMAT_DEEPSEEK: return "deepseek";
+         case COMMON_REASONING_FORMAT_DEEPSEEK_LEGACY: return "deepseek-legacy";
++        case COMMON_REASONING_FORMAT_GRANITE: return "granite";
+         default:
+             throw std::runtime_error("Unknown reasoning format");
+     }
+@@ -1709,6 +1712,7 @@ static common_chat_params common_chat_params_init_granite(const common_chat_temp
+     };
+ 
+     data.prompt = apply(tmpl, inputs, /* messages_override= */ std::nullopt, /* tools_override= */ std::nullopt, additional_context);
++    data.format = COMMON_CHAT_FORMAT_GRANITE;
+ 
+     if (string_ends_with(data.prompt, "<think>\n") || string_ends_with(data.prompt, "<think>")) {
+         if (!inputs.enable_thinking) {
+@@ -1719,7 +1723,6 @@ static common_chat_params common_chat_params_init_granite(const common_chat_temp
+     }
+ 
+     if (!inputs.tools.is_null()) {
+-        data.format = COMMON_CHAT_FORMAT_GRANITE;
+         // Granite uses <|tool_call|> followed by JSON list
+         data.grammar_lazy = inputs.tool_choice != COMMON_CHAT_TOOL_CHOICE_REQUIRED;
+         data.grammar = build_grammar([&](const common_grammar_builder & builder) {
+@@ -1763,7 +1766,6 @@ static common_chat_params common_chat_params_init_granite(const common_chat_temp
+             };
+         });
+     } else {
+-        data.format = COMMON_CHAT_FORMAT_CONTENT_ONLY;
+         // Handle thinking tags for non-tool responses
+         if (data.thinking_forced_open && inputs.enable_thinking) {
+             data.grammar_lazy = false;
+@@ -1948,6 +1950,7 @@ static common_chat_params common_chat_templates_apply_legacy(
+     int alloc_size = 0;
+     std::vector<llama_chat_message> chat;
+     std::vector<std::string> contents;
++
+     for (const auto & msg : inputs.messages) {
+         auto content = msg.content;
+         for (const auto & part : msg.content_parts) {
+diff --git a/common/common.h b/common/common.h
+index 00f42694eafa8..1346041335c32 100644
+--- a/common/common.h
++++ b/common/common.h
+@@ -231,6 +231,7 @@ enum common_reasoning_format {
+     COMMON_REASONING_FORMAT_NONE,
+     COMMON_REASONING_FORMAT_DEEPSEEK_LEGACY, // Extract thinking tag contents and return as `message.reasoning_content`, or leave inline in <think> tags in stream mode
+     COMMON_REASONING_FORMAT_DEEPSEEK,        // Extract thinking tag contents and return as `message.reasoning_content`, including in streaming deltas.
++    COMMON_REASONING_FORMAT_GRANITE,         // Extract thinking tag contents and return as `message.reasoning_content`, including in streaming deltas.
+ };
+ 
+ struct common_params {
+diff --git a/tests/test-chat.cpp b/tests/test-chat.cpp
+index 6ebf1464d911a..ce4ffd06c8fa3 100644
+--- a/tests/test-chat.cpp
++++ b/tests/test-chat.cpp
+@@ -1343,6 +1343,59 @@ static void test_template_output_parsers() {
+                 "{\"arg1\": 1}\n"
+                 "```<｜tool▁call▁end｜><｜tool▁calls▁end｜>");
+     }
++    {
++        auto tmpls = read_templates("models/templates/ibm-granite-granite-2.2-2B-Instruct.jinja");
++        std::vector<std::string> end_tokens{ "<|end_of_text|>" };
++
++        assert_equals(COMMON_CHAT_FORMAT_GRANITE, common_chat_templates_apply(tmpls.get(), inputs_no_tools).format);
++
++        assert_equals(COMMON_CHAT_FORMAT_GRANITE, common_chat_templates_apply(tmpls.get(), inputs_tools).format);
++
++        // Test parsing regular content
++        assert_msg_equals(message_assist,
++            common_chat_parse(
++                "Hello, world!\nWhat's up?",
++                /* is_partial= */ false,
++                {COMMON_CHAT_FORMAT_GRANITE}));
++
++        // Test parsing content with thinking
++        assert_msg_equals(message_assist_thoughts,
++            common_chat_parse(
++                "<think>I'm\nthinking</think>Hello, world!\nWhat's up?",
++                /* is_partial= */ false,
++                {
++                    /* .format = */ COMMON_CHAT_FORMAT_GRANITE,
++                    /* .reasoning_format = */ COMMON_REASONING_FORMAT_GRANITE,
++                }));
++
++        // Test parsing tool calls
++        assert_msg_equals(message_assist_call,
++            common_chat_parse(
++                "<|tool_call|>[{\"name\": \"special_function\", \"arguments\": {\"arg1\": 1}}]",
++                /* is_partial= */ false,
++                {COMMON_CHAT_FORMAT_GRANITE}));
++
++        // Test template generation for regular content
++        test_templates(tmpls.get(), end_tokens, message_assist, tools,
++                      "Hello, world!\nWhat's up?",
++                      /* expect_grammar_triggered= */ false);
++
++        // Test template generation for tool calls
++        test_templates(tmpls.get(), end_tokens, message_assist_call_id, tools,
++                      "{\n"
++                      "  \"tool_calls\": [\n"
++                      "    {\n"
++                      "      \"name\": \"special_function\",\n"
++                      "      \"arguments\": {\n"
++                      "        \"arg1\": 1\n"
++                      "      },\n"
++                      "      \"id\": \"123456789\"\n"
++                      "    }\n"
++                      "  ]\n"
++                      "}",
++                      /* expect_grammar_triggered= */ false
++        );
++    }
+ }
+ 
+ static void test_msg_diffs_compute() {
+
+From 18ccb4040e79530199802dbd6336ac4d156139c6 Mon Sep 17 00:00:00 2001
+From: Sachin Desai <sdesai@salesforce.com>
+Date: Sun, 27 Jul 2025 22:26:14 -0700
+Subject: [PATCH 3/7] revert build-xcframework.sh as libcommon.a is not to be
+ used externally
+
+---
+ build-xcframework.sh | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/build-xcframework.sh b/build-xcframework.sh
+index a4864c6496858..f813984db9dbd 100755
+--- a/build-xcframework.sh
++++ b/build-xcframework.sh
+@@ -116,7 +116,6 @@ setup_framework_structure() {
+ 
+     # Copy all required headers (common for all platforms)
+     cp include/llama.h             ${header_path}
+-    cp include/llama-cpp.h         ${header_path}
+     cp ggml/include/ggml.h         ${header_path}
+     cp ggml/include/ggml-opt.h     ${header_path}
+     cp ggml/include/ggml-alloc.h   ${header_path}
+@@ -125,8 +124,6 @@ setup_framework_structure() {
+     cp ggml/include/ggml-cpu.h     ${header_path}
+     cp ggml/include/ggml-blas.h    ${header_path}
+     cp ggml/include/gguf.h         ${header_path}
+-    cp common/common.h             ${header_path}
+-    cp common/chat.h               ${header_path}
+ 
+     # Create module map (common for all platforms)
+     cat > ${module_path}module.modulemap << EOF
+@@ -250,7 +247,6 @@ combine_static_libraries() {
+ 
+     local libs=(
+         "${base_dir}/${build_dir}/src/${release_dir}/libllama.a"
+-        "${base_dir}/${build_dir}/common/${release_dir}/libcommon.a"
+         "${base_dir}/${build_dir}/ggml/src/${release_dir}/libggml.a"
+         "${base_dir}/${build_dir}/ggml/src/${release_dir}/libggml-base.a"
+         "${base_dir}/${build_dir}/ggml/src/${release_dir}/libggml-cpu.a"
+
+From 8336e6682fb166d8738c3ed4e93977cbe624bde6 Mon Sep 17 00:00:00 2001
+From: Sachin Desai <sdesai@salesforce.com>
+Date: Mon, 28 Jul 2025 09:24:50 -0700
+Subject: [PATCH 4/7] corrected indentation
+
+---
+ common/chat.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/common/chat.cpp b/common/chat.cpp
+index 74d5d7bb64ea3..d8a5f111865d2 100644
+--- a/common/chat.cpp
++++ b/common/chat.cpp
+@@ -1775,7 +1775,7 @@ static common_chat_params common_chat_params_init_granite(const common_chat_temp
+             data.preserved_tokens = {
+                 "<think>",
+                 "</think>",
+-            "<response>",
++                "<response>",
+                 "</response>",
+             };
+         }
+
+From 728c3c05fc2e362e3bbfc78b5cbc53a051631806 Mon Sep 17 00:00:00 2001
+From: Sachin Desai <sdesai@salesforce.com>
+Date: Mon, 28 Jul 2025 10:27:22 -0700
+Subject: [PATCH 5/7] add missing chat template and correct template name
+
+---
+ .../ibm-granite-granite-3.3-2B-Instruct.jinja | 59 +++++++++++++++++++
+ tests/test-chat.cpp                           |  2 +-
+ 2 files changed, 60 insertions(+), 1 deletion(-)
+ create mode 100644 models/templates/ibm-granite-granite-3.3-2B-Instruct.jinja
+
+diff --git a/models/templates/ibm-granite-granite-3.3-2B-Instruct.jinja b/models/templates/ibm-granite-granite-3.3-2B-Instruct.jinja
+new file mode 100644
+index 0000000000000..f5065360960f0
+--- /dev/null
++++ b/models/templates/ibm-granite-granite-3.3-2B-Instruct.jinja
+@@ -0,0 +1,59 @@
++{# Alias tools -> available_tools #}
++{%- if tools and not available_tools -%}
++    {%- set available_tools = tools -%}
++{%- endif -%}
++{%- if messages[0]['role'] == 'system' %}
++     {%- set system_message = messages[0]['content'] %}
++     {%- set loop_messages = messages[1:] %}
++ {%- else %}
++     {%- set system_message = "Knowledge Cutoff Date: April 2024. Today's Date: " + strftime_now('%B %d, %Y') + ". You are Granite, developed by IBM." %}
++     {%- if available_tools and documents %}
++         {%- set system_message = system_message + " You are a helpful assistant with access to the following tools. When a tool is required to answer the user's query, respond only with <|tool_call|> followed by a JSON list of tools used. If a tool does not exist in the provided list of tools, notify the user that you do not have the ability to fulfill the request. Write the response to the user's input by strictly aligning with the facts in the provided documents. If the information needed to answer the question is not available in the documents, inform the user that the question cannot be answered based on the available data." %}
++     {%- elif available_tools %}
++         {%- set system_message = system_message + " You are a helpful assistant with access to the following tools. When a tool is required to answer the user's query, respond only with <|tool_call|> followed by a JSON list of tools used. If a tool does not exist in the provided list of tools, notify the user that you do not have the ability to fulfill the request." %}
++     {%- elif documents %}
++         {%- set system_message = system_message + " Write the response to the user's input by strictly aligning with the facts in the provided documents. If the information needed to answer the question is not available in the documents, inform the user that the question cannot be answered based on the available data." %}
++    {%- elif thinking %}
++    {%- set system_message = system_message + " You are a helpful AI assistant.
++Respond to every user query in a comprehensive and detailed way. You can write down your thoughts and reasoning process before responding. In the thought process, engage in a comprehensive cycle of analysis, summarization, exploration, reassessment, reflection, backtracing, and iteration to develop well-considered thinking process. In the response section, based on various attempts, explorations, and reflections from the thoughts section, systematically present the final solution that you deem correct. The response should summarize the thought process. Write your thoughts between <think></think> and write your response between <response></response> for each user query." %}
++     {%- else %}
++         {%- set system_message = system_message + " You are a helpful AI assistant." %}
++     {%- endif %}
++     {%- if 'citations' in controls and documents %}
++         {%- set system_message = system_message + '
++Use the symbols <|start_of_cite|> and <|end_of_cite|> to indicate when a fact comes from a document in the search result, e.g <|start_of_cite|> {document_id: 1}my fact <|end_of_cite|> for a fact from document 1. Afterwards, list all the citations with their corresponding documents in an ordered list.' %}
++     {%- endif %}
++     {%- if 'hallucinations' in controls and documents %}
++         {%- set system_message = system_message + '
++Finally, after the response is written, include a numbered list of sentences from the response with a corresponding risk value that are hallucinated and not based in the documents.' %}
++     {%- endif %}
++     {%- set loop_messages = messages %}
++ {%- endif %}
++ {{- '<|start_of_role|>system<|end_of_role|>' + system_message + '<|end_of_text|>
++' }}
++ {%- if available_tools %}
++     {{- '<|start_of_role|>available_tools<|end_of_role|>' }}
++     {{- available_tools | tojson(indent=4) }}
++     {{- '<|end_of_text|>
++' }}
++ {%- endif %}
++ {%- if documents %}
++     {%- for document in documents %}
++         {{- '<|start_of_role|>document {"document_id": "' + document['doc_id'] | string + '"}<|end_of_role|>
++' }}
++         {{- document['text'] }}
++         {{- '<|end_of_text|>
++' }}
++              {%- endfor %}
++ {%- endif %}
++ {%- for message in loop_messages %}
++     {{- '<|start_of_role|>' + message['role'] + '<|end_of_role|>' + message['content'] + '<|end_of_text|>
++' }}
++     {%- if loop.last and add_generation_prompt %}
++         {{- '<|start_of_role|>assistant' }}
++             {%- if controls %}
++                 {{- ' ' + controls | tojson()}}
++             {%- endif %}
++         {{- '<|end_of_role|>' }}
++     {%- endif %}
++ {%- endfor %}
+diff --git a/tests/test-chat.cpp b/tests/test-chat.cpp
+index ce4ffd06c8fa3..d2a703ff63045 100644
+--- a/tests/test-chat.cpp
++++ b/tests/test-chat.cpp
+@@ -1344,7 +1344,7 @@ static void test_template_output_parsers() {
+                 "```<｜tool▁call▁end｜><｜tool▁calls▁end｜>");
+     }
+     {
+-        auto tmpls = read_templates("models/templates/ibm-granite-granite-2.2-2B-Instruct.jinja");
++        auto tmpls = read_templates("models/templates/ibm-granite-granite-3.3-2B-Instruct.jinja");
+         std::vector<std::string> end_tokens{ "<|end_of_text|>" };
+ 
+         assert_equals(COMMON_CHAT_FORMAT_GRANITE, common_chat_templates_apply(tmpls.get(), inputs_no_tools).format);
+
+From 361d8fb9b62be3c0b9f90e287e85698d2b3ff3d1 Mon Sep 17 00:00:00 2001
+From: Sachin Desai <sdesai@salesforce.com>
+Date: Wed, 6 Aug 2025 08:37:14 -0700
+Subject: [PATCH 6/7] make it less likely to misidentify the template
+
+---
+ common/chat.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/common/chat.cpp b/common/chat.cpp
+index d8a5f111865d2..d550d258222c9 100644
+--- a/common/chat.cpp
++++ b/common/chat.cpp
+@@ -1890,8 +1890,8 @@ static common_chat_params common_chat_templates_apply_jinja(
+         return common_chat_params_init_command_r7b(tmpl, params);
+     }
+ 
+-    // Granite (IBM) - detects thinking support
+-    if (src.find("elif thinking") != std::string::npos && src.find("<think>") != std::string::npos) {
++    // Granite (IBM) - detects thinking / tools support
++    if (src.find("elif thinking") != std::string::npos && src.find("<|tool_call|>") != std::string::npos) {
+         return common_chat_params_init_granite(tmpl, params);
+     }
+ 
+
+From e483e07bb35e6552806d56eee8b08daed516d551 Mon Sep 17 00:00:00 2001
+From: Sachin Desai <sdesai@salesforce.com>
+Date: Wed, 6 Aug 2025 09:23:05 -0700
+Subject: [PATCH 7/7] add missing break
+
+---
+ common/chat.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/common/chat.cpp b/common/chat.cpp
+index 9a69eadc4129b..316bd24170c9e 100644
+--- a/common/chat.cpp
++++ b/common/chat.cpp
+@@ -2094,6 +2094,7 @@ static void common_chat_parse(common_chat_msg_parser & builder) {
+             break;
+         case COMMON_CHAT_FORMAT_GRANITE:
+             common_chat_parse_granite(builder);
++            break;
+         case COMMON_CHAT_FORMAT_GPT_OSS:
+             common_chat_parse_gpt_oss(builder);
+             break;

@@ -1,0 +1,33 @@
+{
+  "pr_title": "vulkan: Optimize argsort",
+  "total_files_changed": 3,
+  "languages": [
+    "cpp",
+    "comp"
+  ],
+  "main_changes": [
+    {
+      "file": "ggml/src/ggml-vulkan/ggml-vulkan.cpp",
+      "status": "modified",
+      "changes": 24,
+      "language": "cpp",
+      "is_test_file": false
+    },
+    {
+      "file": "ggml/src/ggml-vulkan/vulkan-shaders/argsort.comp",
+      "status": "modified",
+      "changes": 68,
+      "language": "comp",
+      "is_test_file": false
+    },
+    {
+      "file": "tests/test-backend-ops.cpp",
+      "status": "modified",
+      "changes": 1,
+      "language": "cpp",
+      "is_test_file": true
+    }
+  ],
+  "existing_test_files": 1,
+  "test_files_saved": 1
+}

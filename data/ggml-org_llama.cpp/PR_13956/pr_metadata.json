@@ -1,0 +1,6 @@
+{
+  "title": "gguf: fix failure on version == 0",
+  "description": "While reviewing https://github.com/ggml-org/llama.cpp/pull/13943 I noticed that a version of 0 did not correctly result in failure, after the PR it resulted in a failed assertion. This PR adds a corresponding check and a test case.",
+  "base_branch": "master",
+  "head_branch": "gguf-fix-version0"
+}

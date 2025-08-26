@@ -1,0 +1,44 @@
+{
+  "src/llama-sampling.cpp": {
+    "status": "modified",
+    "patch": "@@ -1750,7 +1750,7 @@ static const char * llama_sampler_top_n_sigma_name(const struct llama_sampler *\n static void llama_sampler_top_n_sigma_apply(struct llama_sampler * smpl, llama_token_data_array * cur_p) {\n     const auto * ctx = (llama_sampler_top_n_sigma *) smpl->ctx;\n \n-    if (ctx->n < 0.0f) {\n+    if (ctx->n <= 0.0f || cur_p->size <= 1) {\n         return;\n     }\n ",
+    "additions": 1,
+    "deletions": 1,
+    "changes": 2,
+    "language": "cpp",
+    "imports": [
+      "#include \"llama-sampling.h\"",
+      "#include \"llama-impl.h\"",
+      "#include \"llama-vocab.h\"",
+      "#include \"llama-grammar.h\"",
+      "#include <algorithm>",
+      "#include <cassert>",
+      "#include <cfloat>",
+      "#include <chrono>",
+      "#include <cmath>",
+      "#include <cstdlib>"
+    ],
+    "full_content": "#include \"llama-sampling.h\"\n\n#include \"llama-impl.h\"\n#include \"llama-vocab.h\"\n#include \"llama-grammar.h\"\n\n#include <algorithm>\n#include <cassert>\n#include <cfloat>\n#include <chrono>\n#include <cmath>\n#include <cstdlib>\n#include <cstring>\n#include <ctime>\n#include <numeric>\n#include <random>\n#include <unordered_map>\n#include <stdexcept>\n\n// the ring buffer works similarly to std::deque, but with a fixed capacity\ntemplate<typename T>\nstruct ring_buffer {\n    ring_buffer(size_t cap) : capacity(cap), data(cap) {}\n\n    T & front() {\n        if (sz == 0) {\n            throw std::runtime_error(\"ring buffer is empty\");\n        }\n        return data[first];\n    }\n\n    const T & front() const {\n        if (sz == 0) {\n            throw std::runtime_error(\"ring buffer is empty\");\n        }\n        return data[first];\n    }\n\n    T & back() {\n        if (sz == 0) {\n            throw std::runtime_error(\"ring buffer is empty\");\n        }\n        return data[pos];\n    }\n\n    const T & back() const {\n        if (sz == 0) {\n            throw std::runtime_error(\"ring buffer is empty\");\n        }\n        return data[pos];\n    }\n\n    void push_back(const T & value) {\n        if (capacity == 0) {\n            throw std::runtime_error(\"ring buffer: capacity is zero\");\n        }\n\n        if (sz == capacity) {\n            // advance the start when buffer is full\n            first = (first + 1) % capacity;\n        } else {\n            sz++;\n        }\n        data[pos] = value;\n        pos = (pos + 1) % capacity;\n    }\n\n    T pop_front() {\n        if (sz == 0) {\n            throw std::runtime_error(\"ring buffer is empty\");\n        }\n        T value = data[first];\n        first = (first + 1) % capacity;\n        sz--;\n        return value;\n    }\n\n    //T & operator[](size_t i) {\n    //    if (i >= sz) {\n    //        throw std::runtime_error(\"ring buffer: index out of bounds\");\n    //    }\n    //    return data[(first + i) % capacity];\n    //}\n\n    //const T & at(size_t i) const {\n    //    if (i ",
+    "raw_url": "https://github.com/ggml-org/llama.cpp/raw/91644d8a50704ff357155222b7f2b4c8c959dccf/src%2Fllama-sampling.cpp",
+    "is_test_file": false
+  },
+  "tests/test-sampling.cpp": {
+    "status": "modified",
+    "patch": "@@ -360,7 +360,7 @@ int main(void) {\n     test_dry({0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, {0, 1, 2, 3, 4, 0, 1}, {0.2f, 0.2f, 0.2f, 0.2f, 0.2f}, 1.0f, 1.1f, 4, 7, {});\n \n     test_top_n_sigma({0.1f, 0.2f, 0.3f, 0.4f}, {0.571429f, 0.428571f, 0.0f, 0.0f}, 1.00f);\n-    test_top_n_sigma({0.1f, 0.2f, 0.3f, 0.4f}, {1.0f, 0.0f, 0.0f, 0.0f}, 0.00f);\n+    test_top_n_sigma({0.1f, 0.2f, 0.3f, 0.4f}, {0.4f, 0.3f, 0.2f, 0.1f}, 0.00f); // top_n_sigma == 0 now represents a no-op rather than greedy decoding as of PR#13345\n     test_top_n_sigma({0.1f, 0.2f, 0.3f, 0.4f}, {0.4f, 0.3f, 0.2f, 0.1f}, 3.00f);\n \n     test_sampler_queue(10000, \"k\", 10000, 1.0f, 1.0f);",
+    "additions": 1,
+    "deletions": 1,
+    "changes": 2,
+    "language": "cpp",
+    "imports": [
+      "#include \"ggml.h\"",
+      "#include \"llama.h\"",
+      "#include <algorithm>",
+      "#include <cmath>",
+      "#include <string>",
+      "#include <vector>"
+    ],
+    "full_content": "#include \"ggml.h\"\n#include \"llama.h\"\n\n#ifdef NDEBUG\n#undef NDEBUG\n#endif\n\n#include <algorithm>\n#include <cmath>\n#include <string>\n#include <vector>\n\nextern struct llama_sampler * llama_sampler_init_dry_testing(int32_t context_size, float dry_multiplier, float dry_base, int32_t dry_allowed_length, int32_t dry_penalty_last_n, const std::vector<std::vector<llama_token>>& seq_breakers);\n\nstatic void dump(const llama_token_data_array * cur_p) {\n    for (size_t i = 0; i < cur_p->size; i++) {\n        printf(\"%d: %f (%f)\\n\", cur_p->data[i].id, cur_p->data[i].p, cur_p->data[i].logit);\n    }\n}\n\n#define DUMP(__cur_p) do { printf(\"%s:%d (%s)\\n\", __FILE__, __LINE__, __func__); dump((__cur_p)); printf(\"-\\n\"); } while(0)\n\nstruct sampler_tester {\n    sampler_tester(size_t n_vocab) {\n        cur.reserve(n_vocab);\n        for (llama_token token_id = 0; token_id < (llama_token)n_vocab; token_id++) {\n            const float logit = logf(token_id);\n            cur.emplace_back(llama_token_data{token_id, logit, 0.0f});\n        }\n\n        cur_p = llama_token_data_array { cur.data(), cur.size(), -1, false };\n    }\n\n    sampler_tester(const std::vector<float> & probs, const std::vector<float> & probs_expected) : probs_expected(probs_expected) {\n        cur.reserve(probs.size());\n        for (llama_token token_id = 0; token_id < (llama_token)probs.size(); token_id++) {\n            const float logit = logf(probs[token_id]);\n            cur.emplace_back(llama_token_data{token_id, logit, probs[token_id]});\n        }\n\n        cur_p = llama_token_data_array { cur.data(), cur.size(), -1, false };\n    }\n\n    void apply(llama_sampler * sampler) {\n        llama_sampler_apply(sampler, &cur_p);\n        llama_sampler_free(sampler);\n    }\n\n    void check() {\n        GGML_ASSERT(cur_p.size == probs_expected.size());\n        for (size_t i = 0; i < cur_p.size; i++) {\n            GGML_ASSERT(fabs(cur_p.data[i].p - probs_expected[i]) < 1e-5);\n        }\n    }\n\n    llama_token_data_array cur_p;\n\nprivate:\n    co",
+    "raw_url": "https://github.com/ggml-org/llama.cpp/raw/91644d8a50704ff357155222b7f2b4c8c959dccf/tests%2Ftest-sampling.cpp",
+    "is_test_file": true
+  }
+}
