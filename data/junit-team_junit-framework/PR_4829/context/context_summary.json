@@ -1,0 +1,40 @@
+{
+  "pr_title": "Prune stack traces up to test or lifecycle method",
+  "total_files_changed": 4,
+  "languages": [
+    "java",
+    "adoc"
+  ],
+  "main_changes": [
+    {
+      "file": "documentation/src/docs/asciidoc/release-notes/release-notes-6.0.0-RC1.adoc",
+      "status": "modified",
+      "changes": 3,
+      "language": "adoc",
+      "is_test_file": false
+    },
+    {
+      "file": "junit-platform-commons/src/main/java/org/junit/platform/commons/util/ExceptionUtils.java",
+      "status": "modified",
+      "changes": 17,
+      "language": "java",
+      "is_test_file": false
+    },
+    {
+      "file": "junit-platform-launcher/src/main/java/org/junit/platform/launcher/core/StackTracePruningEngineExecutionListener.java",
+      "status": "modified",
+      "changes": 6,
+      "language": "java",
+      "is_test_file": false
+    },
+    {
+      "file": "platform-tests/src/test/java/org/junit/platform/StackTracePruningTests.java",
+      "status": "modified",
+      "changes": 6,
+      "language": "java",
+      "is_test_file": true
+    }
+  ],
+  "existing_test_files": 1,
+  "test_files_saved": 1
+}

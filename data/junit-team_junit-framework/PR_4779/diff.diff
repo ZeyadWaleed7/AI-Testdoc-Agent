@@ -1,0 +1,1976 @@
+diff --git a/documentation/src/test/java/example/session/HttpTests.java b/documentation/src/test/java/example/session/HttpTests.java
+index ed68c283380f..8198eae1fc68 100644
+--- a/documentation/src/test/java/example/session/HttpTests.java
++++ b/documentation/src/test/java/example/session/HttpTests.java
+@@ -50,7 +50,7 @@ public boolean supportsParameter(ParameterContext parameterContext, ExtensionCon
+ 	}
+ 
+ 	//end::user_guide[]
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	//tag::user_guide[]
+ 	@Override
+ 	public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+diff --git a/documentation/src/test/java/example/sharedresources/SharedResourceDemo.java b/documentation/src/test/java/example/sharedresources/SharedResourceDemo.java
+index 285a7f4632c2..82650ddac062 100644
+--- a/documentation/src/test/java/example/sharedresources/SharedResourceDemo.java
++++ b/documentation/src/test/java/example/sharedresources/SharedResourceDemo.java
+@@ -24,7 +24,7 @@
+ 
+ class SharedResourceDemo {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	//tag::user_guide[]
+ 	@Test
+ 	void runBothCustomEnginesTest() {
+diff --git a/documentation/src/test/java/example/timing/TimingExtension.java b/documentation/src/test/java/example/timing/TimingExtension.java
+index f07abe049c3e..b097aacdf6a7 100644
+--- a/documentation/src/test/java/example/timing/TimingExtension.java
++++ b/documentation/src/test/java/example/timing/TimingExtension.java
+@@ -41,7 +41,7 @@ public void beforeTestExecution(ExtensionContext context) {
+ 	}
+ 
+ 	//end::user_guide[]
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	//tag::user_guide[]
+ 	@Override
+ 	public void afterTestExecution(ExtensionContext context) {
+diff --git a/gradle/plugins/common/src/main/kotlin/junitbuild.java-nullability-conventions.gradle.kts b/gradle/plugins/common/src/main/kotlin/junitbuild.java-nullability-conventions.gradle.kts
+index 87c01e957fe0..f2664ecaf9f8 100644
+--- a/gradle/plugins/common/src/main/kotlin/junitbuild.java-nullability-conventions.gradle.kts
++++ b/gradle/plugins/common/src/main/kotlin/junitbuild.java-nullability-conventions.gradle.kts
+@@ -64,6 +64,8 @@ tasks.withType<JavaCompile>().configureEach {
+ 			isJSpecifyMode = true
+ 			customContractAnnotations.add("org.junit.platform.commons.annotation.Contract")
+ 			checkContracts = true
++			// FIXME a new gradle-nullaway-plugin version is needed for a proper DSL
++			checkOptions.put("NullAway:SuppressionNameAliases", "DataFlowIssue")
+ 		}
+ 	}
+ }
+diff --git a/junit-jupiter-api/src/main/java/org/junit/jupiter/api/condition/MethodBasedCondition.java b/junit-jupiter-api/src/main/java/org/junit/jupiter/api/condition/MethodBasedCondition.java
+index 157a75dadd57..f671e37b214d 100644
+--- a/junit-jupiter-api/src/main/java/org/junit/jupiter/api/condition/MethodBasedCondition.java
++++ b/junit-jupiter-api/src/main/java/org/junit/jupiter/api/condition/MethodBasedCondition.java
+@@ -88,7 +88,7 @@ private boolean invokeConditionMethod(Method method, ExtensionContext context) {
+ 		return invokeMethod(method, context, testInstance);
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	private static boolean invokeMethod(Method method, ExtensionContext context, @Nullable Object testInstance) {
+ 		if (method.getParameterCount() == 0) {
+ 			return (boolean) ReflectionSupport.invokeMethod(method, testInstance);
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/api/AssertAllAssertionsTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/api/AssertAllAssertionsTests.java
+index 08fdcdd65e1c..0bee5bb609be 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/api/AssertAllAssertionsTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/api/AssertAllAssertionsTests.java
+@@ -37,25 +37,25 @@
+  */
+ class AssertAllAssertionsTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void assertAllWithNullExecutableArray() {
+ 		assertPrecondition("executables array must not be null or empty", () -> assertAll((Executable[]) null));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void assertAllWithNullExecutableCollection() {
+ 		assertPrecondition("executables collection must not be null", () -> assertAll((Collection<Executable>) null));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void assertAllWithNullExecutableStream() {
+ 		assertPrecondition("executables stream must not be null", () -> assertAll((Stream<Executable>) null));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void assertAllWithNullInExecutableArray() {
+ 		assertPrecondition("individual executables must not be null", () -> assertAll((Executable) null));
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/api/AssertLinesMatchAssertionsTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/api/AssertLinesMatchAssertionsTests.java
+index 4bc5f0c57765..99e195d9b580 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/api/AssertLinesMatchAssertionsTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/api/AssertLinesMatchAssertionsTests.java
+@@ -95,7 +95,7 @@ void assertLinesMatchUsingFastForwardMarkerWithLimit3() {
+ 	}
+ 
+ 	@Test
+-	@SuppressWarnings({ "unchecked", "rawtypes", "DataFlowIssue", "NullAway" })
++	@SuppressWarnings({ "unchecked", "rawtypes", "DataFlowIssue" })
+ 	void assertLinesMatchWithNullFails() {
+ 		assertThrows(PreconditionViolationException.class, () -> assertLinesMatch(null, (List) null));
+ 		assertThrows(PreconditionViolationException.class, () -> assertLinesMatch(null, Collections.emptyList()));
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/api/DynamicTestTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/api/DynamicTestTests.java
+index 409940b6212d..094408a7da9e 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/api/DynamicTestTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/api/DynamicTestTests.java
+@@ -43,7 +43,7 @@ class DynamicTestTests {
+ 
+ 	private final List<@Nullable String> assertedValues = new ArrayList<>();
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void streamFromStreamPreconditions() {
+ 		ThrowingConsumer<Object> testExecutor = input -> {
+@@ -58,7 +58,7 @@ void streamFromStreamPreconditions() {
+ 			() -> DynamicTest.stream(Stream.empty(), displayNameGenerator, null));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void streamFromIteratorPreconditions() {
+ 		ThrowingConsumer<Object> testExecutor = input -> {
+@@ -73,7 +73,7 @@ void streamFromIteratorPreconditions() {
+ 			() -> DynamicTest.stream(emptyIterator(), displayNameGenerator, null));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void streamFromStreamWithNamesPreconditions() {
+ 		ThrowingConsumer<Object> testExecutor = input -> {
+@@ -84,7 +84,7 @@ void streamFromStreamWithNamesPreconditions() {
+ 		assertThrows(PreconditionViolationException.class, () -> DynamicTest.stream(Stream.empty(), null));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void streamFromIteratorWithNamesPreconditions() {
+ 		ThrowingConsumer<Object> testExecutor = input -> {
+@@ -95,14 +95,14 @@ void streamFromIteratorWithNamesPreconditions() {
+ 		assertThrows(PreconditionViolationException.class, () -> DynamicTest.stream(emptyIterator(), null));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void streamFromStreamWithNamedExecutablesPreconditions() {
+ 		assertThrows(PreconditionViolationException.class,
+ 			() -> DynamicTest.stream((Stream<DummyNamedExecutableForTests>) null));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void streamFromIteratorWithNamedExecutablesPreconditions() {
+ 		assertThrows(PreconditionViolationException.class,
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/api/FailAssertionsTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/api/FailAssertionsTests.java
+index fff673f1bd56..7bfbc55878de 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/api/FailAssertionsTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/api/FailAssertionsTests.java
+@@ -74,7 +74,7 @@ void failWithNullString() {
+ 		}
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void failWithNullMessageSupplier() {
+ 		try {
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/api/extension/MediaTypeTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/api/extension/MediaTypeTests.java
+index 7e1bea151e7c..febe7e8386a4 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/api/extension/MediaTypeTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/api/extension/MediaTypeTests.java
+@@ -45,7 +45,7 @@ void parseWithInvalidMediaType() {
+ 		assertEquals("Invalid media type: 'invalid'", exception.getMessage());
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void parseWithNullMediaType() {
+ 		var exception = assertThrows(PreconditionViolationException.class, () -> MediaType.parse(null));
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/engine/ReportingTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/engine/ReportingTests.java
+index 35ae53e9ae89..5e5c2c88ede2 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/engine/ReportingTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/engine/ReportingTests.java
+@@ -115,7 +115,7 @@ void succeedingTest(TestReporter reporter) {
+ 				file -> Files.writeString(file, "succeedingTest"));
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void invalidReportData(TestReporter reporter) {
+ 
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/engine/config/DefaultJupiterConfigurationTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/engine/config/DefaultJupiterConfigurationTests.java
+index 37b134b978de..0b0489f44c37 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/engine/config/DefaultJupiterConfigurationTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/engine/config/DefaultJupiterConfigurationTests.java
+@@ -44,7 +44,7 @@ class DefaultJupiterConfigurationTests {
+ 
+ 	private static final String KEY = DEFAULT_TEST_INSTANCE_LIFECYCLE_PROPERTY_NAME;
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void getDefaultTestInstanceLifecyclePreconditions() {
+ 		PreconditionViolationException exception = assertThrows(PreconditionViolationException.class,
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/engine/descriptor/DisplayNameUtilsTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/engine/descriptor/DisplayNameUtilsTests.java
+index 40fddf7fbd78..2969192304d0 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/engine/descriptor/DisplayNameUtilsTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/engine/descriptor/DisplayNameUtilsTests.java
+@@ -218,7 +218,7 @@ class NestedTestCase {
+ 
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	static class NullDisplayNameGenerator implements DisplayNameGenerator {
+ 
+ 		@Override
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/engine/descriptor/LauncherStoreFacadeTest.java b/jupiter-tests/src/test/java/org/junit/jupiter/engine/descriptor/LauncherStoreFacadeTest.java
+index ae6d12135362..32b5f1520506 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/engine/descriptor/LauncherStoreFacadeTest.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/engine/descriptor/LauncherStoreFacadeTest.java
+@@ -79,7 +79,7 @@ void returnsNamespaceAwareStore() {
+ 		assertNotNull(adapter);
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void throwsExceptionWhenNamespaceIsNull() {
+ 		LauncherStoreFacade facade = new LauncherStoreFacade(requestLevelStore);
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/engine/descriptor/TestInstanceLifecycleUtilsTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/engine/descriptor/TestInstanceLifecycleUtilsTests.java
+index 2617a5153215..dd193832bb29 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/engine/descriptor/TestInstanceLifecycleUtilsTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/engine/descriptor/TestInstanceLifecycleUtilsTests.java
+@@ -48,7 +48,7 @@ class TestInstanceLifecycleUtilsTests {
+ 
+ 	private static final String KEY = DEFAULT_TEST_INSTANCE_LIFECYCLE_PROPERTY_NAME;
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void getTestInstanceLifecyclePreconditions() {
+ 		PreconditionViolationException exception = assertThrows(PreconditionViolationException.class,
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/engine/execution/ParameterResolutionUtilsTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/engine/execution/ParameterResolutionUtilsTests.java
+index de3301e61ef9..8adb67dd2112 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/engine/execution/ParameterResolutionUtilsTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/engine/execution/ParameterResolutionUtilsTests.java
+@@ -149,7 +149,7 @@ void onlyConsiderParameterResolversThatSupportAParticularParameter() {
+ 		assertThat(arguments).containsExactly("something");
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void passContextInformationToParameterResolverMethods() {
+ 		anyTestMethodWithAtLeastOneParameter();
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/CloseablePathTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/CloseablePathTests.java
+index 6f4a3bfb427b..3c00dbd27824 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/CloseablePathTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/CloseablePathTests.java
+@@ -167,7 +167,7 @@ void factoryReturnsDirectoryOnNonDefaultFileSystemWithPath() throws IOException
+ 			delete(closeablePath.get());
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@DisplayName("fails if the factory returns null")
+ 		@ParameterizedTest
+ 		@ElementTypeSource
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/OrderedMethodTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/OrderedMethodTests.java
+index b19ef8e08bbf..6c195553b3b9 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/OrderedMethodTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/OrderedMethodTests.java
+@@ -744,7 +744,7 @@ public void orderMethods(MethodOrdererContext context) {
+ 			context.getMethodDescriptors().set(1, createMethodDescriptorImpersonator(method2));
+ 		}
+ 
+-		@SuppressWarnings({ "unchecked", "DataFlowIssue" })
++		@SuppressWarnings("unchecked")
+ 		static <T> T createMethodDescriptorImpersonator(MethodDescriptor method) {
+ 			MethodDescriptor stub = new MethodDescriptor() {
+ 				@Override
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TempDirectoryTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TempDirectoryTests.java
+index a96541568836..2ab92e3aabc1 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TempDirectoryTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TempDirectoryTests.java
+@@ -357,7 +357,7 @@ void doesNotSupportCustomDefaultTempDirFactoryNotReturningDirectory() {
+ 
+ 		private static class FactoryNotReturningDirectory implements TempDirFactory {
+ 
+-			@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++			@SuppressWarnings("DataFlowIssue")
+ 			@Override
+ 			public Path createTempDirectory(AnnotatedElementContext elementContext, ExtensionContext extensionContext) {
+ 				return null;
+@@ -1475,7 +1475,7 @@ void test(@SuppressWarnings("unused") @TempDir(factory = Factory.class) Path tem
+ 			// never called
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		private static class Factory implements TempDirFactory {
+ 
+ 			@Override
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TestInstanceFactoryTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TestInstanceFactoryTests.java
+index 4ebed49d5b07..579ade0aaecd 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TestInstanceFactoryTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TestInstanceFactoryTests.java
+@@ -775,7 +775,7 @@ private static class LegacyInstanceFactory extends AbstractTestInstanceFactory {
+ 	 */
+ 	private static class NullTestInstanceFactory implements TestInstanceFactory {
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Override
+ 		public Object createTestInstance(TestInstanceFactoryContext factoryContext, ExtensionContext extensionContext) {
+ 			return null;
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TestReporterParameterResolverTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TestReporterParameterResolverTests.java
+index c6b811a1d684..d40e678dcae7 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TestReporterParameterResolverTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TestReporterParameterResolverTests.java
+@@ -31,7 +31,7 @@ class TestReporterParameterResolverTests {
+ 
+ 	TestReporterParameterResolver resolver = new TestReporterParameterResolver();
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void supports() {
+ 		Parameter parameter1 = findParameterOfMethod("methodWithTestReporterParameter", TestReporter.class);
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TimeoutExceptionFactoryTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TimeoutExceptionFactoryTests.java
+index 62f5a6f8ceec..175f0e2468d8 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TimeoutExceptionFactoryTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TimeoutExceptionFactoryTests.java
+@@ -51,7 +51,7 @@ void createExceptionWithMethodSignatureTimeoutAndThrowable() {
+ 				.hasSuppressedException(suppressedException);
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway", "ThrowableNotThrown" })
++	@SuppressWarnings({ "DataFlowIssue", "ThrowableNotThrown" })
+ 	@Nested
+ 	@DisplayName("throws exception when")
+ 	class ThrowException {
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TimeoutInvocationFactoryTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TimeoutInvocationFactoryTests.java
+index 946a0344179e..e8e73bcbd8a3 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TimeoutInvocationFactoryTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/engine/extension/TimeoutInvocationFactoryTests.java
+@@ -61,7 +61,7 @@ void setUp() {
+ 		timeoutInvocationFactory = new TimeoutInvocationFactory(store);
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	@DisplayName("throws exception when null store is provided on create")
+ 	void shouldThrowExceptionWhenInstantiatingWithNullStore() {
+@@ -69,7 +69,7 @@ void shouldThrowExceptionWhenInstantiatingWithNullStore() {
+ 				.hasMessage("store must not be null");
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	@DisplayName("throws exception when null timeout thread mode is provided on create")
+ 	void shouldThrowExceptionWhenNullTimeoutThreadModeIsProvidedWhenCreate() {
+@@ -77,7 +77,7 @@ void shouldThrowExceptionWhenNullTimeoutThreadModeIsProvidedWhenCreate() {
+ 				.hasMessage("thread mode must not be null");
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	@DisplayName("throws exception when null timeout invocation parameters is provided on create")
+ 	void shouldThrowExceptionWhenNullTimeoutInvocationParametersIsProvidedWhenCreate() {
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/params/aggregator/DefaultArgumentsAccessorTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/params/aggregator/DefaultArgumentsAccessorTests.java
+index 4d223f526a76..f9d80d934e8b 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/params/aggregator/DefaultArgumentsAccessorTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/params/aggregator/DefaultArgumentsAccessorTests.java
+@@ -30,7 +30,7 @@
+  */
+ class DefaultArgumentsAccessorTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void argumentsMustNotBeNull() {
+ 		assertThrows(PreconditionViolationException.class, () -> defaultArgumentsAccessor(1, (Object[]) null));
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/params/converter/TypedArgumentConverterTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/params/converter/TypedArgumentConverterTests.java
+index d6f72cc47ee1..fbb2f2ee6dd0 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/params/converter/TypedArgumentConverterTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/params/converter/TypedArgumentConverterTests.java
+@@ -48,7 +48,7 @@ class UnitTests {
+ 		/**
+ 		 * @since 5.8
+ 		 */
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void preconditions() {
+ 			assertThatExceptionOfType(PreconditionViolationException.class)//
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/params/provider/AnnotationBasedArgumentsProviderTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/params/provider/AnnotationBasedArgumentsProviderTests.java
+index 4e75630c5d39..7843b678ce20 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/params/provider/AnnotationBasedArgumentsProviderTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/params/provider/AnnotationBasedArgumentsProviderTests.java
+@@ -38,7 +38,7 @@ protected Stream<? extends Arguments> provideArguments(
+ 		}
+ 	};
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	@DisplayName("should throw exception when null annotation is provided to accept method")
+ 	void shouldThrowExceptionWhenNullAnnotationIsProvidedToAccept() {
+diff --git a/jupiter-tests/src/test/java/org/junit/jupiter/params/provider/MethodArgumentsProviderTests.java b/jupiter-tests/src/test/java/org/junit/jupiter/params/provider/MethodArgumentsProviderTests.java
+index 1f64d9dbc047..828038ae1226 100644
+--- a/jupiter-tests/src/test/java/org/junit/jupiter/params/provider/MethodArgumentsProviderTests.java
++++ b/jupiter-tests/src/test/java/org/junit/jupiter/params/provider/MethodArgumentsProviderTests.java
+@@ -773,7 +773,7 @@ private static Object[] array(Object... objects) {
+ 		return provider.provideArguments(mock(), extensionContext).map(Arguments::get);
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	private DefaultExecutableInvoker getExecutableInvoker(ExtensionContext extensionContext) {
+ 		return new DefaultExecutableInvoker(extensionContext, extensionRegistry);
+ 	}
+diff --git a/platform-tests/src/test/java/org/junit/platform/commons/function/TryTests.java b/platform-tests/src/test/java/org/junit/platform/commons/function/TryTests.java
+index d7901d7aac7d..9776fa44c306 100644
+--- a/platform-tests/src/test/java/org/junit/platform/commons/function/TryTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/commons/function/TryTests.java
+@@ -72,7 +72,7 @@ void failedTriesCanBeTransformed() throws Exception {
+ 		assertThat(exception.get()).isSameAs(cause);
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void successfulTriesCanStoreNull() throws Exception {
+ 		var success = Try.success(null);
+@@ -101,7 +101,7 @@ void triesWithSameContentAreEqual() {
+ 		assertThat(failure).isEqualTo(Try.failure(cause));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void methodPreconditionsAreChecked() {
+ 		assertThrows(JUnitException.class, () -> Try.call(null));
+diff --git a/platform-tests/src/test/java/org/junit/platform/commons/support/AnnotationSupportTests.java b/platform-tests/src/test/java/org/junit/platform/commons/support/AnnotationSupportTests.java
+index 67c36c8a7c12..9f57d47b7e78 100644
+--- a/platform-tests/src/test/java/org/junit/platform/commons/support/AnnotationSupportTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/commons/support/AnnotationSupportTests.java
+@@ -35,7 +35,7 @@
+  */
+ class AnnotationSupportTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void isAnnotatedPreconditions() {
+ 		var optional = Optional.of(Probe.class);
+@@ -59,7 +59,7 @@ void isAnnotatedDelegates() {
+ 			AnnotationSupport.isAnnotated(element, Override.class));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAnnotationOnElementPreconditions() {
+ 		var optional = Optional.of(Probe.class);
+@@ -84,7 +84,7 @@ void findAnnotationOnElementDelegates() {
+ 			AnnotationSupport.findAnnotation(element, Override.class));
+ 	}
+ 
+-	@SuppressWarnings({ "deprecation", "DataFlowIssue", "NullAway" })
++	@SuppressWarnings({ "deprecation", "DataFlowIssue" })
+ 	@Test
+ 	void findAnnotationOnClassWithSearchModePreconditions() {
+ 		assertPreconditionViolationException("annotationType",
+@@ -93,7 +93,7 @@ void findAnnotationOnClassWithSearchModePreconditions() {
+ 			() -> AnnotationSupport.findAnnotation(Probe.class, Override.class, (SearchOption) null));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAnnotationOnClassWithEnclosingInstanceTypesPreconditions() {
+ 		assertPreconditionViolationException("enclosingInstanceTypes",
+@@ -135,7 +135,7 @@ void findAnnotationOnClassWithEnclosingInstanceTypes() {
+ 				.contains(Probe.class.getDeclaredAnnotation(Tag.class));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findPublicAnnotatedFieldsPreconditions() {
+ 		assertPreconditionViolationException("Class",
+@@ -154,7 +154,7 @@ void findPublicAnnotatedFieldsDelegates() {
+ 			AnnotationSupport.findPublicAnnotatedFields(Probe.class, Throwable.class, Override.class));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAnnotatedMethodsPreconditions() {
+ 		assertPreconditionViolationException("Class",
+@@ -199,7 +199,7 @@ void findRepeatableAnnotationsDelegates() throws Throwable {
+ 		assertEquals(expected.toString(), actual.toString(), "expected equal exception toString representation");
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findRepeatableAnnotationsPreconditions() {
+ 		assertPreconditionViolationException("annotationType",
+@@ -225,7 +225,7 @@ void findAnnotatedFieldsDelegates() {
+ 				HierarchyTraversalMode.TOP_DOWN));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAnnotatedFieldsPreconditions() {
+ 		assertPreconditionViolationException("Class",
+@@ -277,7 +277,7 @@ void findAnnotatedFieldValuesForStaticFieldsByType() {
+ 				.containsExactlyInAnyOrder("s1", "s2");
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAnnotatedFieldValuesPreconditions() {
+ 		assertPreconditionViolationException("instance",
+diff --git a/platform-tests/src/test/java/org/junit/platform/commons/support/ClassSupportTests.java b/platform-tests/src/test/java/org/junit/platform/commons/support/ClassSupportTests.java
+index 98e90a516900..6689bb26d623 100644
+--- a/platform-tests/src/test/java/org/junit/platform/commons/support/ClassSupportTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/commons/support/ClassSupportTests.java
+@@ -24,7 +24,7 @@
+  */
+ class ClassSupportTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void nullSafeToStringPreconditions() {
+ 		Function<? super Class<?>, ? extends String> mapper = null;
+diff --git a/platform-tests/src/test/java/org/junit/platform/commons/support/ModifierSupportTests.java b/platform-tests/src/test/java/org/junit/platform/commons/support/ModifierSupportTests.java
+index 1e2605d77e79..46b30d109f61 100644
+--- a/platform-tests/src/test/java/org/junit/platform/commons/support/ModifierSupportTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/commons/support/ModifierSupportTests.java
+@@ -34,7 +34,7 @@
+  */
+ class ModifierSupportTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void isPublicPreconditions() {
+ 		assertPreconditionViolationException("Class", () -> ModifierSupport.isPublic((Class<?>) null));
+@@ -52,7 +52,7 @@ void isPublicDelegates(Method method) {
+ 		assertEquals(ReflectionUtils.isPublic(method), ModifierSupport.isPublic(method));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void isPrivatePreconditions() {
+ 		assertPreconditionViolationException("Class", () -> ModifierSupport.isPrivate((Class<?>) null));
+@@ -70,7 +70,7 @@ void isPrivateDelegates(Method method) {
+ 		assertEquals(ReflectionUtils.isPrivate(method), ModifierSupport.isPrivate(method));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void isNotPrivatePreconditions() {
+ 		assertPreconditionViolationException("Class", () -> ModifierSupport.isNotPrivate((Class<?>) null));
+@@ -88,7 +88,7 @@ void isNotPrivateDelegates(Method method) {
+ 		assertEquals(ReflectionUtils.isNotPrivate(method), ModifierSupport.isNotPrivate(method));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void isAbstractPreconditions() {
+ 		assertPreconditionViolationException("Class", () -> ModifierSupport.isAbstract((Class<?>) null));
+@@ -106,7 +106,7 @@ void isAbstractDelegates(Method method) {
+ 		assertEquals(ReflectionUtils.isAbstract(method), ModifierSupport.isAbstract(method));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void isNotAbstractPreconditions() {
+ 		assertPreconditionViolationException("Class", () -> ModifierSupport.isNotAbstract((Class<?>) null));
+@@ -124,7 +124,7 @@ void isNotAbstractDelegates(Method method) {
+ 		assertEquals(ReflectionUtils.isNotAbstract(method), ModifierSupport.isNotAbstract(method));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void isStaticPreconditions() {
+ 		assertPreconditionViolationException("Class", () -> ModifierSupport.isStatic((Class<?>) null));
+@@ -142,7 +142,7 @@ void isStaticDelegates(Method method) {
+ 		assertEquals(ReflectionUtils.isStatic(method), ModifierSupport.isStatic(method));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void isNotStaticPreconditions() {
+ 		assertPreconditionViolationException("Class", () -> ModifierSupport.isNotStatic((Class<?>) null));
+@@ -160,7 +160,7 @@ void isNotStaticDelegates(Method method) {
+ 		assertEquals(ReflectionUtils.isNotStatic(method), ModifierSupport.isNotStatic(method));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void isFinalPreconditions() {
+ 		assertPreconditionViolationException("Class", () -> ModifierSupport.isFinal((Class<?>) null));
+@@ -178,7 +178,7 @@ void isFinalDelegates(Method method) {
+ 		assertEquals(ReflectionUtils.isFinal(method), ModifierSupport.isFinal(method));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void isNotFinalPreconditions() {
+ 		assertPreconditionViolationException("Class", () -> ModifierSupport.isNotFinal((Class<?>) null));
+diff --git a/platform-tests/src/test/java/org/junit/platform/commons/support/ReflectionSupportTests.java b/platform-tests/src/test/java/org/junit/platform/commons/support/ReflectionSupportTests.java
+index 4aea6556942f..5ad6b628b6eb 100644
+--- a/platform-tests/src/test/java/org/junit/platform/commons/support/ReflectionSupportTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/commons/support/ReflectionSupportTests.java
+@@ -56,7 +56,7 @@ void tryToLoadClassDelegates() {
+ 			ReflectionSupport.tryToLoadClass("java.nio.Bits"));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void tryToLoadClassPreconditions() {
+ 		assertPreconditionViolationExceptionForString("Class name", () -> ReflectionSupport.tryToLoadClass(null));
+@@ -81,7 +81,7 @@ void tryToLoadClassWithExplicitClassLoaderDelegates() {
+ 	/**
+ 	 * @since 1.10
+ 	 */
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void tryToLoadClassWithExplicitClassLoaderPreconditions() {
+ 		var cl = getClass().getClassLoader();
+@@ -110,7 +110,7 @@ List<DynamicTest> findAllClassesInClasspathRootDelegates() throws Throwable {
+ 	/**
+ 	 * @since 1.12
+ 	 */
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void tryToGetResourcesPreconditions() {
+ 		assertPreconditionViolationExceptionForString("Resource name", () -> ReflectionSupport.tryToGetResources(null));
+@@ -133,7 +133,7 @@ void tryToGetResources() {
+ 			ReflectionSupport.tryToGetResources("default-package.resource", getDefaultClassLoader()).toOptional());
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAllClassesInClasspathRootPreconditions() {
+ 		var path = Path.of(".").toUri();
+@@ -167,7 +167,7 @@ List<DynamicTest> findAllResourcesInClasspathRootDelegates() throws Throwable {
+ 	/**
+ 	 * @since 1.11
+ 	 */
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAllResourcesInClasspathRootPreconditions() {
+ 		var path = Path.of(".").toUri();
+@@ -199,7 +199,7 @@ List<DynamicTest> streamAllResourcesInClasspathRootDelegates() throws Throwable
+ 	/**
+ 	 * @since 1.11
+ 	 */
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void streamAllResourcesInClasspathRootPreconditions() {
+ 		var path = Path.of(".").toUri();
+@@ -216,7 +216,7 @@ void findAllClassesInPackageDelegates() {
+ 			ReflectionSupport.findAllClassesInPackage("org.junit", allTypes, allNames));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAllClassesInPackagePreconditions() {
+ 		assertPreconditionViolationExceptionForString("basePackageName",
+@@ -241,7 +241,7 @@ void findAllResourcesInPackageDelegates() {
+ 	/**
+ 	 * @since 1.11
+ 	 */
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAllResourcesInPackagePreconditions() {
+ 		assertPreconditionViolationExceptionForString("basePackageName",
+@@ -264,7 +264,7 @@ void streamAllResourcesInPackageDelegates() {
+ 	/**
+ 	 * @since 1.11
+ 	 */
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void streamAllResourcesInPackagePreconditions() {
+ 		assertPreconditionViolationExceptionForString("basePackageName",
+@@ -279,7 +279,7 @@ void findAllClassesInModuleDelegates() {
+ 			ReflectionSupport.findAllClassesInModule("org.junit.platform.commons", allTypes, allNames));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAllClassesInModulePreconditions() {
+ 		var exception = assertThrows(PreconditionViolationException.class,
+@@ -303,7 +303,7 @@ void findAllResourcesInModuleDelegates() {
+ 	/**
+ 	 * @since 1.11
+ 	 */
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAllResourcesInModulePreconditions() {
+ 		var exception = assertThrows(PreconditionViolationException.class,
+@@ -325,7 +325,7 @@ void streamAllResourcesInModuleDelegates() {
+ 	/**
+ 	 * @since 1.11
+ 	 */
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void streamAllResourcesInModulePreconditions() {
+ 		var exception = assertThrows(PreconditionViolationException.class,
+@@ -341,7 +341,7 @@ void newInstanceDelegates() {
+ 			ReflectionSupport.newInstance(String.class, "foo"));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void newInstancePreconditions() {
+ 		assertPreconditionViolationException("Class", () -> ReflectionSupport.newInstance(null));
+@@ -358,7 +358,7 @@ void invokeMethodDelegates() throws Exception {
+ 			ReflectionSupport.invokeMethod(method, null, "true"));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void invokeMethodPreconditions() throws Exception {
+ 		assertPreconditionViolationException("Method", () -> ReflectionSupport.invokeMethod(null, null, "true"));
+@@ -382,7 +382,7 @@ void findFieldsDelegates() {
+ 			ReflectionSupport.findFields(ReflectionSupportTests.class, allFields, HierarchyTraversalMode.TOP_DOWN));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findFieldsPreconditions() {
+ 		assertPreconditionViolationException("Class",
+@@ -408,7 +408,7 @@ void tryToReadFieldValueDelegates() throws Exception {
+ 			ReflectionSupport.tryToReadFieldValue(instanceField, this));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void tryToReadFieldValuePreconditions() throws Exception {
+ 		assertPreconditionViolationException("Field", () -> ReflectionSupport.tryToReadFieldValue(null, this));
+@@ -430,7 +430,7 @@ void findMethodDelegates() {
+ 			ReflectionSupport.findMethod(Boolean.class, "valueOf", String.class));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findMethodPreconditions() {
+ 		assertPreconditionViolationException("Class",
+@@ -464,7 +464,7 @@ void findMethodsDelegates() {
+ 			ReflectionSupport.findMethods(ReflectionSupportTests.class, allMethods, HierarchyTraversalMode.TOP_DOWN));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findMethodsPreconditions() {
+ 		assertPreconditionViolationException("Class",
+@@ -485,7 +485,7 @@ void findNestedClassesDelegates() {
+ 			ReflectionSupport.findNestedClasses(ClassWithNestedClasses.class, ReflectionUtils::isStatic));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findNestedClassesPreconditions() {
+ 		assertPreconditionViolationException("Class",
+diff --git a/platform-tests/src/test/java/org/junit/platform/commons/support/scanning/DefaultClasspathScannerTests.java b/platform-tests/src/test/java/org/junit/platform/commons/support/scanning/DefaultClasspathScannerTests.java
+index d79540ddf728..2612c14e2713 100644
+--- a/platform-tests/src/test/java/org/junit/platform/commons/support/scanning/DefaultClasspathScannerTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/commons/support/scanning/DefaultClasspathScannerTests.java
+@@ -441,14 +441,14 @@ void resourcesCanBeRead() throws IOException {
+ 		}
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void scanForClassesInPackageForNullBasePackage() {
+ 		assertThrows(PreconditionViolationException.class,
+ 			() -> classpathScanner.scanForClassesInPackage(null, allClasses));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void scanForResourcesInPackageForNullBasePackage() {
+ 		assertThrows(PreconditionViolationException.class,
+@@ -467,7 +467,7 @@ void scanForResourcesInPackageForWhitespaceBasePackage() {
+ 			() -> classpathScanner.scanForResourcesInPackage("    ", allResources));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void scanForClassesInPackageForNullClassFilter() {
+ 		assertThrows(PreconditionViolationException.class,
+@@ -551,7 +551,7 @@ void findAllClassesInClasspathRootWithFilter() throws Exception {
+ 		assertTrue(classes.contains(DefaultClasspathScannerTests.class));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAllClassesInClasspathRootForNullRoot() {
+ 		assertThrows(PreconditionViolationException.class,
+@@ -564,7 +564,7 @@ void findAllClassesInClasspathRootForNonExistingRoot() {
+ 			() -> classpathScanner.scanForClassesInClasspathRoot(Path.of("does_not_exist").toUri(), allClasses));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAllClassesInClasspathRootForNullClassFilter() {
+ 		assertThrows(PreconditionViolationException.class,
+diff --git a/platform-tests/src/test/java/org/junit/platform/commons/util/AnnotationUtilsTests.java b/platform-tests/src/test/java/org/junit/platform/commons/util/AnnotationUtilsTests.java
+index 03bd7938e141..4f7d0541cbd9 100644
+--- a/platform-tests/src/test/java/org/junit/platform/commons/util/AnnotationUtilsTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/commons/util/AnnotationUtilsTests.java
+@@ -335,14 +335,14 @@ private void assertExtensionsFound(Class<?> clazz, String... tags) {
+ 			() -> "Extensions found for class " + clazz.getName());
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAnnotatedMethodsForNullClass() {
+ 		assertThrows(PreconditionViolationException.class,
+ 			() -> findAnnotatedMethods(null, Annotation1.class, TOP_DOWN));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAnnotatedMethodsForNullAnnotationType() {
+ 		assertThrows(PreconditionViolationException.class,
+@@ -423,21 +423,21 @@ void findAnnotatedMethodsForAnnotationUsedInInterface() throws Exception {
+ 
+ 	// === findAnnotatedFields() ===============================================
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAnnotatedFieldsForNullClass() {
+ 		assertThrows(PreconditionViolationException.class,
+ 			() -> findAnnotatedFields(null, Annotation1.class, isStringField, TOP_DOWN));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAnnotatedFieldsForNullAnnotationType() {
+ 		assertThrows(PreconditionViolationException.class,
+ 			() -> findAnnotatedFields(ClassWithAnnotatedFields.class, null, isStringField, TOP_DOWN));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findAnnotatedFieldsForNullPredicate() {
+ 		assertThrows(PreconditionViolationException.class,
+@@ -534,21 +534,21 @@ void findAnnotatedFieldsDoesNotAllowInstanceFieldToHideStaticField() throws Exce
+ 
+ 	// === findPublicAnnotatedFields() =========================================
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findPublicAnnotatedFieldsForNullClass() {
+ 		assertThrows(PreconditionViolationException.class,
+ 			() -> findPublicAnnotatedFields(null, String.class, Annotation1.class));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findPublicAnnotatedFieldsForNullFieldType() {
+ 		assertThrows(PreconditionViolationException.class,
+ 			() -> findPublicAnnotatedFields(getClass(), null, Annotation1.class));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void findPublicAnnotatedFieldsForNullAnnotationType() {
+ 		assertThrows(PreconditionViolationException.class,
+diff --git a/platform-tests/src/test/java/org/junit/platform/commons/util/ClassLoaderUtilsTests.java b/platform-tests/src/test/java/org/junit/platform/commons/util/ClassLoaderUtilsTests.java
+index 562a0fea2499..c8e8b93136fb 100644
+--- a/platform-tests/src/test/java/org/junit/platform/commons/util/ClassLoaderUtilsTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/commons/util/ClassLoaderUtilsTests.java
+@@ -29,7 +29,7 @@
+  */
+ class ClassLoaderUtilsTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void getClassLoaderPreconditions() {
+ 		assertThatExceptionOfType(PreconditionViolationException.class)//
+@@ -101,7 +101,7 @@ void getDefaultClassLoaderWithNullContextClassLoader() {
+ 		}
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void getLocationFromNullFails() {
+ 		var exception = assertThrows(PreconditionViolationException.class, () -> ClassLoaderUtils.getLocation(null));
+diff --git a/platform-tests/src/test/java/org/junit/platform/commons/util/CollectionUtilsTests.java b/platform-tests/src/test/java/org/junit/platform/commons/util/CollectionUtilsTests.java
+index b6b5780c1e41..c89768914341 100644
+--- a/platform-tests/src/test/java/org/junit/platform/commons/util/CollectionUtilsTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/commons/util/CollectionUtilsTests.java
+@@ -57,7 +57,7 @@ class CollectionUtilsTests {
+ 	@Nested
+ 	class OnlyElement {
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void nullCollection() {
+ 			var exception = assertThrows(PreconditionViolationException.class,
+@@ -90,7 +90,7 @@ void multiElementCollection() {
+ 	@Nested
+ 	class FirstElement {
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void nullCollection() {
+ 			var exception = assertThrows(PreconditionViolationException.class,
+@@ -183,7 +183,7 @@ void isConvertibleToStreamForNull() {
+ 			assertThat(CollectionUtils.isConvertibleToStream(null)).isFalse();
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void toStreamWithNull() {
+ 			Exception exception = assertThrows(PreconditionViolationException.class,
+diff --git a/platform-tests/src/test/java/org/junit/platform/commons/util/ExceptionUtilsTests.java b/platform-tests/src/test/java/org/junit/platform/commons/util/ExceptionUtilsTests.java
+index cc30b382ceac..c3d38f12864a 100644
+--- a/platform-tests/src/test/java/org/junit/platform/commons/util/ExceptionUtilsTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/commons/util/ExceptionUtilsTests.java
+@@ -34,7 +34,7 @@
+ @SuppressWarnings("ThrowableNotThrown")
+ class ExceptionUtilsTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void throwAsUncheckedExceptionWithNullException() {
+ 		assertThrows(PreconditionViolationException.class, () -> throwAsUncheckedException(null));
+@@ -50,7 +50,7 @@ void throwAsUncheckedExceptionWithUncheckedException() {
+ 		assertThrows(RuntimeException.class, () -> throwAsUncheckedException(new NumberFormatException()));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void readStackTraceForNullThrowable() {
+ 		assertThrows(PreconditionViolationException.class, () -> readStackTrace(null));
+diff --git a/platform-tests/src/test/java/org/junit/platform/commons/util/FunctionUtilsTests.java b/platform-tests/src/test/java/org/junit/platform/commons/util/FunctionUtilsTests.java
+index 42d9938ff5af..6efdbb7a69f5 100644
+--- a/platform-tests/src/test/java/org/junit/platform/commons/util/FunctionUtilsTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/commons/util/FunctionUtilsTests.java
+@@ -26,14 +26,14 @@
+  */
+ class FunctionUtilsTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void whereWithNullFunction() {
+ 		var exception = assertThrows(PreconditionViolationException.class, () -> FunctionUtils.where(null, o -> true));
+ 		assertEquals("function must not be null", exception.getMessage());
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void whereWithNullPredicate() {
+ 		var exception = assertThrows(PreconditionViolationException.class, () -> FunctionUtils.where(o -> o, null));
+diff --git a/platform-tests/src/test/java/org/junit/platform/commons/util/PackageUtilsTests.java b/platform-tests/src/test/java/org/junit/platform/commons/util/PackageUtilsTests.java
+index de415b7c4467..3f4ed0700d12 100644
+--- a/platform-tests/src/test/java/org/junit/platform/commons/util/PackageUtilsTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/commons/util/PackageUtilsTests.java
+@@ -33,7 +33,7 @@
+  */
+ class PackageUtilsTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void getAttributeWithNullType() {
+ 		var exception = assertThrows(PreconditionViolationException.class,
+@@ -41,7 +41,7 @@ void getAttributeWithNullType() {
+ 		assertEquals("type must not be null", exception.getMessage());
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void getAttributeWithNullFunction() {
+ 		var exception = assertThrows(PreconditionViolationException.class,
+@@ -49,7 +49,7 @@ void getAttributeWithNullFunction() {
+ 		assertEquals("function must not be null", exception.getMessage());
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void getAttributeWithFunctionReturningNullIsEmpty() {
+ 		assertFalse(PackageUtils.getAttribute(ValueWrapper.class, p -> null).isPresent());
+@@ -78,7 +78,7 @@ private Executable isPresent(Function<Package, String> function) {
+ 		return () -> assertTrue(PackageUtils.getAttribute(ValueWrapper.class, function).isPresent());
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void getAttributeWithNullTypeAndName() {
+ 		var exception = assertThrows(PreconditionViolationException.class,
+@@ -86,7 +86,7 @@ void getAttributeWithNullTypeAndName() {
+ 		assertEquals("type must not be null", exception.getMessage());
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void getAttributeWithNullName() {
+ 		var exception = assertThrows(PreconditionViolationException.class,
+diff --git a/platform-tests/src/test/java/org/junit/platform/commons/util/ReflectionUtilsTests.java b/platform-tests/src/test/java/org/junit/platform/commons/util/ReflectionUtilsTests.java
+index ea00a40b2412..2423a01b9318 100644
+--- a/platform-tests/src/test/java/org/junit/platform/commons/util/ReflectionUtilsTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/commons/util/ReflectionUtilsTests.java
+@@ -117,7 +117,7 @@ void returnsPrimitiveVoid() throws Exception {
+ 			assertFalse(ReflectionUtils.returnsPrimitiveVoid(clazz.getDeclaredMethod("methodReturningPrimitive")));
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void getAllAssignmentCompatibleClassesWithNullClass() {
+ 			assertThrows(PreconditionViolationException.class,
+@@ -132,7 +132,7 @@ void getAllAssignmentCompatibleClasses() {
+ 			assertTrue(superclasses.stream().allMatch(clazz -> clazz.isAssignableFrom(B.class)));
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void newInstance() {
+ 			// @formatter:off
+@@ -252,7 +252,7 @@ private static void createDirectories(Path... paths) throws IOException {
+ 			}
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void getDeclaredConstructorPreconditions() {
+ 			// @formatter:off
+@@ -551,7 +551,7 @@ static void staticMethod() {
+ 	@Nested
+ 	class IsClassAssignableToClassTests {
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void isAssignableToForNullSourceType() {
+ 			assertThatExceptionOfType(PreconditionViolationException.class)//
+@@ -566,7 +566,7 @@ void isAssignableToForPrimitiveSourceType() {
+ 					.withMessage("source type must not be a primitive type");
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void isAssignableToForNullTargetType() {
+ 			assertThatExceptionOfType(PreconditionViolationException.class)//
+@@ -623,7 +623,7 @@ void isAssignableTo() {
+ 	@Nested
+ 	class IsObjectAssignableToClassTests {
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void isAssignableToForNullClass() {
+ 			assertThrows(PreconditionViolationException.class,
+@@ -689,7 +689,7 @@ void isAssignableToForNullObjectAndPrimitive() {
+ 	@Nested
+ 	class MethodInvocationTests {
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void invokeMethodPreconditions() {
+ 			// @formatter:off
+@@ -756,7 +756,7 @@ private void privateMethod() {
+ 	@Nested
+ 	class ResourceLoadingTests {
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void tryToGetResourcePreconditions() {
+ 			assertThrows(PreconditionViolationException.class, () -> ReflectionUtils.tryToGetResources(""));
+@@ -798,7 +798,7 @@ void tryToGetResourceWhenResourceNotFound() {
+ 	@Nested
+ 	class ClassLoadingTests {
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void tryToLoadClassPreconditions() {
+ 			assertThrows(PreconditionViolationException.class, () -> ReflectionUtils.tryToLoadClass(null));
+@@ -965,7 +965,7 @@ private static void assertTryToLoadClass(String name, Class<?> type) {
+ 	@Nested
+ 	class FullyQualifiedMethodNameTests {
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void getFullyQualifiedMethodNamePreconditions() {
+ 			// @formatter:off
+@@ -1001,7 +1001,7 @@ void getFullyQualifiedMethodNameForMethodWithMultipleParameters() {
+ 			// @formatter:on
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void parseFullyQualifiedMethodNamePreconditions() {
+ 			// @formatter:off
+@@ -1041,7 +1041,7 @@ void parseFullyQualifiedMethodNameForMethodWithMultipleParameters() {
+ 	@Nested
+ 	class NestedClassTests {
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void findNestedClassesPreconditions() {
+ 			// @formatter:off
+@@ -1051,7 +1051,7 @@ void findNestedClassesPreconditions() {
+ 			// @formatter:on
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void isNestedClassPresentPreconditions() {
+ 			// @formatter:off
+@@ -1232,7 +1232,7 @@ static class ClassExtendingClassWithNestedClasses extends ClassWithNestedClasses
+ 	@Nested
+ 	class MethodUtilitiesTests {
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void tryToGetMethodPreconditions() {
+ 			assertThrows(PreconditionViolationException.class, () -> ReflectionUtils.tryToGetMethod(null, null));
+@@ -1257,7 +1257,7 @@ void tryToGetMethod() throws Exception {
+ 			assertThat(ReflectionUtils.tryToGetMethod(Object.class, "clone", int.class).toOptional()).isEmpty();
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void isMethodPresentPreconditions() {
+ 			assertThrows(PreconditionViolationException.class, () -> ReflectionUtils.isMethodPresent(null, m -> true));
+@@ -1279,7 +1279,7 @@ void isMethodPresent() {
+ 	@Nested
+ 	class FindMethodTests {
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void findMethodByParameterTypesPreconditions() {
+ 			// @formatter:off
+@@ -1468,7 +1468,7 @@ void methodWithParameterizedMap(Map<String, String> map) {
+ 	@Nested
+ 	class FindMethodsTests {
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void findMethodsPreconditions() {
+ 			// @formatter:off
+@@ -1890,7 +1890,7 @@ void tryToReadFieldValueOfNonexistentInstanceField() {
+ 				() -> tryToReadFieldValue(MyClass.class, "doesNotExist", new MySubClass(42)).get());
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void tryToReadFieldValueOfExistingStaticField() throws Exception {
+ 			assertThat(tryToReadFieldValue(MyClass.class, "staticField", null).get()).isEqualTo(42);
+@@ -1942,7 +1942,7 @@ void findFieldsDoesNotAllowInstanceFieldToHideStaticField() throws Exception {
+ 			assertThat(fields).containsExactly(nonStaticField);
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void readFieldValuesPreconditions() {
+ 			List<Field> fields = new ArrayList<>();
+diff --git a/platform-tests/src/test/java/org/junit/platform/commons/util/StringUtilsTests.java b/platform-tests/src/test/java/org/junit/platform/commons/util/StringUtilsTests.java
+index 315fdb472500..7881e831c151 100644
+--- a/platform-tests/src/test/java/org/junit/platform/commons/util/StringUtilsTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/commons/util/StringUtilsTests.java
+@@ -50,7 +50,7 @@ void blankness() {
+ 		// @formatter:on
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void whitespace() {
+ 		// @formatter:off
+@@ -74,7 +74,7 @@ void whitespace() {
+ 		// @formatter:on
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void controlCharacters() {
+ 		// @formatter:off
+@@ -98,7 +98,7 @@ void controlCharacters() {
+ 		// @formatter:on
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void replaceControlCharacters() {
+ 		assertNull(replaceIsoControlCharacters(null, ""));
+@@ -112,7 +112,7 @@ void replaceControlCharacters() {
+ 		assertThrows(PreconditionViolationException.class, () -> replaceIsoControlCharacters("", null));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void replaceWhitespaces() {
+ 		assertNull(replaceWhitespaceCharacters(null, ""));
+diff --git a/platform-tests/src/test/java/org/junit/platform/commons/util/ToStringBuilderTests.java b/platform-tests/src/test/java/org/junit/platform/commons/util/ToStringBuilderTests.java
+index 10d268699f55..ec4b984ddd4a 100644
+--- a/platform-tests/src/test/java/org/junit/platform/commons/util/ToStringBuilderTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/commons/util/ToStringBuilderTests.java
+@@ -27,19 +27,19 @@
+  */
+ class ToStringBuilderTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void withNullObject() {
+ 		assertThrows(PreconditionViolationException.class, () -> new ToStringBuilder((Object) null));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void withNullClass() {
+ 		assertThrows(PreconditionViolationException.class, () -> new ToStringBuilder((Class<?>) null));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void appendWithIllegalName() {
+ 		var builder = new ToStringBuilder("");
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/CompositeTestDescriptorVisitorTests.java b/platform-tests/src/test/java/org/junit/platform/engine/CompositeTestDescriptorVisitorTests.java
+index 675de2bd7002..1e6ff2924a7e 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/CompositeTestDescriptorVisitorTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/CompositeTestDescriptorVisitorTests.java
+@@ -22,7 +22,7 @@
+ 
+ class CompositeTestDescriptorVisitorTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void checksPreconditions() {
+ 		assertThrows(PreconditionViolationException.class, Visitor::composite);
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/TestTagTests.java b/platform-tests/src/test/java/org/junit/platform/engine/TestTagTests.java
+index 0a8bf6fae4cf..70c1e4da3339 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/TestTagTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/TestTagTests.java
+@@ -28,7 +28,7 @@
+  */
+ class TestTagTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void validSyntax() {
+ 		// @formatter:off
+@@ -66,7 +66,7 @@ void factory() {
+ 		assertEquals("foo-tag", TestTag.create("\t  foo-tag  \n").getName());
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void factoryPreconditions() {
+ 		assertSyntaxViolation(null);
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/UniqueIdTests.java b/platform-tests/src/test/java/org/junit/platform/engine/UniqueIdTests.java
+index 4a18ec05cf05..5c1fb2b9f7bf 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/UniqueIdTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/UniqueIdTests.java
+@@ -123,7 +123,7 @@ void appendingSegmentInstance() {
+ 			assertSegment(uniqueId.getSegments().get(2), "t2", "v2");
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void appendingNullIsNotAllowed() {
+ 			var uniqueId = UniqueId.forEngine(ENGINE_ID);
+@@ -230,7 +230,7 @@ void additionalSegmentMakesItNotEqual() {
+ 	@Nested
+ 	class Prefixing {
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void nullIsNotAPrefix() {
+ 			var id = UniqueId.forEngine(ENGINE_ID);
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/discovery/ClassNameFilterTests.java b/platform-tests/src/test/java/org/junit/platform/engine/discovery/ClassNameFilterTests.java
+index 158f086fae47..6abf2556458e 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/discovery/ClassNameFilterTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/discovery/ClassNameFilterTests.java
+@@ -23,7 +23,7 @@
+  */
+ class ClassNameFilterTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void includeClassNamePatternsChecksPreconditions() {
+ 		assertThatThrownBy(() -> ClassNameFilter.includeClassNamePatterns((String[]) null)) //
+@@ -86,7 +86,7 @@ void includeClassNamePatternsWithMultiplePatterns() {
+ 					+ secondRegex + "'");
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void excludeClassNamePatternsChecksPreconditions() {
+ 		assertThatThrownBy(() -> ClassNameFilter.excludeClassNamePatterns((String[]) null)) //
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/discovery/DiscoverySelectorsTests.java b/platform-tests/src/test/java/org/junit/platform/engine/discovery/DiscoverySelectorsTests.java
+index 1d8c81a4fbd0..0b8dd823168a 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/discovery/DiscoverySelectorsTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/discovery/DiscoverySelectorsTests.java
+@@ -69,7 +69,7 @@ class DiscoverySelectorsTests {
+ 	@Nested
+ 	class SelectUriTests {
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void selectUriByName() {
+ 			assertViolatesPrecondition(() -> selectUri((String) null));
+@@ -82,7 +82,7 @@ void selectUriByName() {
+ 			assertEquals(uri, selector.getUri().toString());
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void selectUriByURI() {
+ 			assertViolatesPrecondition(() -> selectUri((URI) null));
+@@ -108,7 +108,7 @@ void parseUriSelector() {
+ 					.isEqualTo(URI.create("https://junit.org"));
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void selectFileByName() {
+ 			assertViolatesPrecondition(() -> selectFile((String) null));
+@@ -122,7 +122,7 @@ void selectFileByName() {
+ 			assertEquals(Path.of(path), selector.getPath());
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void selectFileByNameAndPosition() {
+ 			var filePosition = FilePosition.from(12, 34);
+@@ -138,7 +138,7 @@ void selectFileByNameAndPosition() {
+ 			assertEquals(filePosition, selector.getPosition().orElseThrow());
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void selectFileByFileReference() throws Exception {
+ 			assertViolatesPrecondition(() -> selectFile((File) null));
+@@ -155,7 +155,7 @@ void selectFileByFileReference() throws Exception {
+ 			assertEquals(Path.of(path), selector.getPath());
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void selectFileByFileReferenceAndPosition() throws Exception {
+ 			var filePosition = FilePosition.from(12, 34);
+@@ -232,7 +232,7 @@ void parseFileSelectorWithAbsolutePathAndFilePosition() {
+ 						Optional.of(filePosition));
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void selectDirectoryByName() {
+ 			assertViolatesPrecondition(() -> selectDirectory((String) null));
+@@ -246,7 +246,7 @@ void selectDirectoryByName() {
+ 			assertEquals(Path.of(path), selector.getPath());
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void selectDirectoryByFileReference() throws Exception {
+ 			assertViolatesPrecondition(() -> selectDirectory((File) null));
+@@ -294,7 +294,7 @@ void parseDirectorySelectorWithAbsolutePath() {
+ 					.containsExactly(path, new File(path), Path.of(path));
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void selectClasspathResourcesPreconditions() {
+ 			assertViolatesPrecondition(() -> selectClasspathResource((String) null));
+@@ -341,7 +341,7 @@ void getMissingClasspathResources() {
+ 			assertViolatesPrecondition(selector::getClasspathResources);
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void selectClasspathResourcesWithFilePosition() {
+ 			var filePosition = FilePosition.from(12, 34);
+@@ -432,7 +432,7 @@ void parseModuleByName() {
+ 					.isEqualTo("java.base");
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void selectModuleByNamePreconditions() {
+ 			assertViolatesPrecondition(() -> selectModule(null));
+@@ -447,7 +447,7 @@ void selectModulesByNames() {
+ 			assertThat(names).containsExactlyInAnyOrder("b", "a");
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void selectModulesByNamesPreconditions() {
+ 			assertViolatesPrecondition(() -> selectModules(null));
+@@ -547,7 +547,7 @@ void selectClassByNameWithExplicitClassLoader() throws Exception {
+ 	@Nested
+ 	class SelectMethodTests {
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		@DisplayName("Preconditions: selectMethod(className, methodName)")
+ 		void selectMethodByClassNameAndMethodNamePreconditions() {
+@@ -559,7 +559,7 @@ void selectMethodByClassNameAndMethodNamePreconditions() {
+ 			assertViolatesPrecondition(() -> selectMethod("   ", "method"));
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		@DisplayName("Preconditions: selectMethod(className, methodName, parameterTypeNames)")
+ 		void selectMethodByClassNameMethodNameAndParameterTypeNamesPreconditions() {
+@@ -572,7 +572,7 @@ void selectMethodByClassNameMethodNameAndParameterTypeNamesPreconditions() {
+ 			assertViolatesPrecondition(() -> selectMethod("TestClass", "method", (String) null));
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		@DisplayName("Preconditions: selectMethod(className, methodName, parameterTypes)")
+ 		void selectMethodByClassNameMethodNameAndParameterTypesPreconditions() {
+@@ -586,7 +586,7 @@ void selectMethodByClassNameMethodNameAndParameterTypesPreconditions() {
+ 			assertViolatesPrecondition(() -> selectMethod("TestClass", "method", new Class<?>[] { int.class, null }));
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		@DisplayName("Preconditions: selectMethod(class, methodName)")
+ 		void selectMethodByClassAndMethodNamePreconditions() {
+@@ -596,7 +596,7 @@ void selectMethodByClassAndMethodNamePreconditions() {
+ 			assertViolatesPrecondition(() -> selectMethod((Class<?>) null, "method"));
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		@DisplayName("Preconditions: selectMethod(class, methodName, parameterTypeNames)")
+ 		void selectMethodByClassMethodNameAndParameterTypeNamesPreconditions() {
+@@ -607,7 +607,7 @@ void selectMethodByClassMethodNameAndParameterTypeNamesPreconditions() {
+ 			assertViolatesPrecondition(() -> selectMethod(testClass(), "method", (String) null));
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		@DisplayName("Preconditions: selectMethod(class, method)")
+ 		void selectMethodByClassAndMethodPreconditions() {
+@@ -1151,7 +1151,7 @@ void selectDoubleNestedClassByClassNames() {
+ 			assertThat(parseIdentifier(selector)).isEqualTo(selector);
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void selectNestedClassPreconditions() {
+ 			assertViolatesPrecondition(() -> selectNestedClass(null, "ClassName"));
+@@ -1319,7 +1319,7 @@ void selectDoubleNestedMethodByEnclosingClassNamesAndMethodName() throws Excepti
+ 			assertThat(parseIdentifier(selector)).isEqualTo(selector);
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		@DisplayName("Preconditions: selectNestedMethod(enclosingClassNames, nestedClassName, methodName)")
+ 		void selectNestedMethodByEnclosingClassNamesAndMethodNamePreconditions() {
+@@ -1331,7 +1331,7 @@ void selectNestedMethodByEnclosingClassNamesAndMethodNamePreconditions() {
+ 			assertViolatesPrecondition(() -> selectNestedMethod(List.of("ClassName"), "ClassName", " "));
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		@DisplayName("Preconditions: selectNestedMethod(enclosingClassNames, nestedClassName, methodName, parameterTypeNames)")
+ 		void selectNestedMethodByEnclosingClassNamesMethodNameAndParameterTypeNamesPreconditions() {
+@@ -1348,7 +1348,7 @@ void selectNestedMethodByEnclosingClassNamesMethodNameAndParameterTypeNamesPreco
+ 		/**
+ 		 * @since 1.10
+ 		 */
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		@DisplayName("Preconditions: selectNestedMethod(enclosingClassNames, nestedClassName, methodName, parameterTypes)")
+ 		void selectNestedMethodByEnclosingClassNamesMethodNameAndParameterTypesPreconditions() {
+@@ -1367,7 +1367,7 @@ void selectNestedMethodByEnclosingClassNamesMethodNameAndParameterTypesPrecondit
+ 		/**
+ 		 * @since 1.10
+ 		 */
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		@DisplayName("Preconditions: selectNestedMethod(enclosingClasses, nestedClass, methodName, parameterTypes)")
+ 		void selectNestedMethodByEnclosingClassesClassMethodNameAndParameterTypesPreconditions() {
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/discovery/PackageNameFilterTests.java b/platform-tests/src/test/java/org/junit/platform/engine/discovery/PackageNameFilterTests.java
+index fb52e9c9858b..6f227908e454 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/discovery/PackageNameFilterTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/discovery/PackageNameFilterTests.java
+@@ -23,7 +23,7 @@
+  */
+ class PackageNameFilterTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void includePackageChecksPreconditions() {
+ 		assertThatThrownBy(() -> PackageNameFilter.includePackageNames((String[]) null)) //
+@@ -75,7 +75,7 @@ void includePackageWithMultiplePackages() {
+ 					+ includedPackage2 + "'");
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void excludePackageChecksPreconditions() {
+ 		assertThatThrownBy(() -> PackageNameFilter.excludePackageNames((String[]) null)) //
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/support/config/PrefixedConfigurationParametersTests.java b/platform-tests/src/test/java/org/junit/platform/engine/support/config/PrefixedConfigurationParametersTests.java
+index c2f4fa7f0fb2..dabfee86e9ac 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/support/config/PrefixedConfigurationParametersTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/support/config/PrefixedConfigurationParametersTests.java
+@@ -37,7 +37,7 @@ class PrefixedConfigurationParametersTests {
+ 	@Mock
+ 	private ConfigurationParameters delegate;
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void preconditions() {
+ 		assertThrows(PreconditionViolationException.class, () -> new PrefixedConfigurationParameters(null, "example."));
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/ClassSourceTests.java b/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/ClassSourceTests.java
+index e1ee9cd4e0e3..362a9d5bdb96 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/ClassSourceTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/ClassSourceTests.java
+@@ -39,7 +39,7 @@ Stream<Serializable> createSerializableInstances() {
+ 		);
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void preconditions() {
+ 		assertThrows(PreconditionViolationException.class, () -> ClassSource.from((String) null));
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/ClasspathResourceSourceTests.java b/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/ClasspathResourceSourceTests.java
+index a84a471d9b92..bb36abdccd3f 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/ClasspathResourceSourceTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/ClasspathResourceSourceTests.java
+@@ -38,7 +38,7 @@ Stream<ClasspathResourceSource> createSerializableInstances() {
+ 		return Stream.of(ClasspathResourceSource.from(FOO_RESOURCE));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void preconditions() {
+ 		assertThrows(PreconditionViolationException.class, () -> ClasspathResourceSource.from((String) null));
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/CompositeTestSourceTests.java b/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/CompositeTestSourceTests.java
+index f09f0efbcaa3..cb53867cc682 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/CompositeTestSourceTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/CompositeTestSourceTests.java
+@@ -37,7 +37,7 @@ Stream<CompositeTestSource> createSerializableInstances() {
+ 		return Stream.of(CompositeTestSource.from(sources));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void createCompositeTestSourceFromNullList() {
+ 		assertThrows(PreconditionViolationException.class, () -> CompositeTestSource.from(null));
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/DefaultUriSourceTests.java b/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/DefaultUriSourceTests.java
+index f68fc5e6d8c3..6b63fed65816 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/DefaultUriSourceTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/DefaultUriSourceTests.java
+@@ -33,7 +33,7 @@ Stream<UriSource> createSerializableInstances() {
+ 		return Stream.of(new DefaultUriSource(URI.create("sample://instance")));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void nullSourceUriYieldsException() {
+ 		assertThrows(PreconditionViolationException.class, () -> new DefaultUriSource(null));
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/FileSystemSourceTests.java b/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/FileSystemSourceTests.java
+index 9f6723b85e31..802d2c47cda6 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/FileSystemSourceTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/FileSystemSourceTests.java
+@@ -34,7 +34,7 @@ Stream<FileSource> createSerializableInstances() {
+ 			FileSource.from(new File("file.and.position"), FilePosition.from(42, 23)));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void nullSourceFileOrDirectoryYieldsException() {
+ 		assertThrows(PreconditionViolationException.class, () -> FileSource.from(null));
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/MethodSourceTests.java b/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/MethodSourceTests.java
+index df9106349d16..7f7f2ba4a6b3 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/MethodSourceTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/MethodSourceTests.java
+@@ -57,7 +57,7 @@ void equalsAndHashCodeForMethodSource() throws Exception {
+ 		assertEqualsAndHashCode(MethodSource.from(method1), MethodSource.from(method1), MethodSource.from(method2));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void instantiatingWithNullNamesShouldThrowPreconditionViolationException() {
+ 		assertThrows(PreconditionViolationException.class, () -> MethodSource.from("foo", null));
+@@ -76,13 +76,13 @@ void instantiatingWithBlankNamesShouldThrowPreconditionViolationException() {
+ 		assertThrows(PreconditionViolationException.class, () -> MethodSource.from("  ", "foo"));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void instantiationWithNullMethodShouldThrowPreconditionViolationException() {
+ 		assertThrows(PreconditionViolationException.class, () -> MethodSource.from(null));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void instantiationWithNullClassOrMethodShouldThrowPreconditionViolationException() {
+ 		assertThrows(PreconditionViolationException.class,
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/PackageSourceTests.java b/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/PackageSourceTests.java
+index 7b32ab9cd25a..5f55e05647bb 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/PackageSourceTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/PackageSourceTests.java
+@@ -34,7 +34,7 @@ Stream<Serializable> createSerializableInstances() {
+ 		return Stream.of(PackageSource.from("package.source"));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void packageSourceFromNullPackageName() {
+ 		assertThrows(PreconditionViolationException.class, () -> PackageSource.from((String) null));
+@@ -45,7 +45,7 @@ void packageSourceFromEmptyPackageName() {
+ 		assertThrows(PreconditionViolationException.class, () -> PackageSource.from("  "));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void packageSourceFromNullPackageReference() {
+ 		assertThrows(PreconditionViolationException.class, () -> PackageSource.from((Package) null));
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/TestDescriptorOrderChildrenTests.java b/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/TestDescriptorOrderChildrenTests.java
+index 8d0e8e239dc1..e14f6c92e438 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/TestDescriptorOrderChildrenTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/support/descriptor/TestDescriptorOrderChildrenTests.java
+@@ -116,7 +116,7 @@ default void orderChildrenDuplicatesDescriptor() {
+ 		assertThat(exception).hasMessage("orderer may not add or remove test descriptors");
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	default void orderChildrenOrdererReturnsNull() {
+ 		var testDescriptor = createTestDescriptorWithChildren();
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/support/hierarchical/ForkJoinPoolHierarchicalTestExecutorServiceTests.java b/platform-tests/src/test/java/org/junit/platform/engine/support/hierarchical/ForkJoinPoolHierarchicalTestExecutorServiceTests.java
+index a31f31598a4a..23a94de108e0 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/support/hierarchical/ForkJoinPoolHierarchicalTestExecutorServiceTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/support/hierarchical/ForkJoinPoolHierarchicalTestExecutorServiceTests.java
+@@ -168,7 +168,7 @@ static List<Arguments> compatibleLockCombinations() {
+ 		);
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@ParameterizedTest
+ 	@MethodSource("compatibleLockCombinations")
+ 	void canWorkStealTaskWithCompatibleLocks(Set<ExclusiveResource> initialResources,
+diff --git a/platform-tests/src/test/java/org/junit/platform/engine/support/store/NamespacedHierarchicalStoreTests.java b/platform-tests/src/test/java/org/junit/platform/engine/support/store/NamespacedHierarchicalStoreTests.java
+index 571f321f6d84..a239db0cae2e 100644
+--- a/platform-tests/src/test/java/org/junit/platform/engine/support/store/NamespacedHierarchicalStoreTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/engine/support/store/NamespacedHierarchicalStoreTests.java
+@@ -207,7 +207,7 @@ void getWithTypeSafety() {
+ 			assertEquals(value, requiredTypeValue);
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void getWithTypeSafetyAndPrimitiveValueType() {
+ 			String key = "enigma";
+@@ -288,7 +288,7 @@ void computeIfAbsentWithTypeSafety() {
+ 			assertEquals(value, computedValue);
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway", "deprecation" })
++		@SuppressWarnings({ "DataFlowIssue", "deprecation" })
+ 		@Test
+ 		void getOrComputeIfAbsentWithTypeSafetyAndPrimitiveValueType() {
+ 			String key = "enigma";
+@@ -357,7 +357,7 @@ void removeWithTypeSafety() {
+ 			assertNull(store.get(namespace, key));
+ 		}
+ 
+-		@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++		@SuppressWarnings("DataFlowIssue")
+ 		@Test
+ 		void removeWithTypeSafetyAndPrimitiveValueType() {
+ 			String key = "enigma";
+diff --git a/platform-tests/src/test/java/org/junit/platform/launcher/MethodFilterTests.java b/platform-tests/src/test/java/org/junit/platform/launcher/MethodFilterTests.java
+index af47b9fabd3d..14b8d8bd1d3b 100644
+--- a/platform-tests/src/test/java/org/junit/platform/launcher/MethodFilterTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/launcher/MethodFilterTests.java
+@@ -39,7 +39,7 @@ class MethodFilterTests {
+ 	private static final TestDescriptor CLASS2_TEST1 = methodTestDescriptor("class2", Class2.class, "test1");
+ 	private static final TestDescriptor CLASS2_TEST2 = methodTestDescriptor("class2", Class2.class, "test2");
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void includeMethodNamePatternsChecksPreconditions() {
+ 		assertThatThrownBy(() -> includeMethodNamePatterns((String[]) null)) //
+@@ -87,7 +87,7 @@ void includeMultipleMethodNamePatterns() {
+ 				firstRegex, secondRegex));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void excludeMethodNamePatternsChecksPreconditions() {
+ 		assertThatThrownBy(() -> excludeMethodNamePatterns((String[]) null)) //
+diff --git a/platform-tests/src/test/java/org/junit/platform/launcher/TagFilterTests.java b/platform-tests/src/test/java/org/junit/platform/launcher/TagFilterTests.java
+index 734bbcdb0a34..e27e9d25addb 100644
+--- a/platform-tests/src/test/java/org/junit/platform/launcher/TagFilterTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/launcher/TagFilterTests.java
+@@ -61,7 +61,7 @@ void includeTagsWithInvalidSyntax() {
+ 		// @formatter:on
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	private void assertSyntaxViolationForIncludes(@Nullable String tag) {
+ 		var exception = assertThrows(PreconditionViolationException.class, () -> includeTags(tag));
+ 		assertThat(exception).hasMessageStartingWith("Unable to parse tag expression");
+@@ -79,7 +79,7 @@ void excludeTagsWithInvalidSyntax() {
+ 		// @formatter:on
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	private void assertSyntaxViolationForExcludes(@Nullable String tag) {
+ 		var exception = assertThrows(PreconditionViolationException.class, () -> excludeTags(tag));
+ 		assertThat(exception).hasMessageStartingWith("Unable to parse tag expression");
+diff --git a/platform-tests/src/test/java/org/junit/platform/launcher/core/DefaultLauncherTests.java b/platform-tests/src/test/java/org/junit/platform/launcher/core/DefaultLauncherTests.java
+index bc3ede9085d5..4be05fe60846 100644
+--- a/platform-tests/src/test/java/org/junit/platform/launcher/core/DefaultLauncherTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/launcher/core/DefaultLauncherTests.java
+@@ -134,7 +134,7 @@ void discoverEmptyTestPlanWithEngineWithoutAnyTests() {
+ 	void discoverTestPlanForEngineThatReturnsNullForItsRootDescriptor() {
+ 		TestEngine engine = new TestEngineStub("some-engine-id") {
+ 
+-			@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++			@SuppressWarnings("DataFlowIssue")
+ 			@Override
+ 			public TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
+ 				return null;
+@@ -155,7 +155,7 @@ public TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId
+ 	void discoverErrorTestDescriptorForEngineThatThrowsInDiscoveryPhase(Class<? extends Throwable> throwableClass) {
+ 		TestEngine engine = new TestEngineStub("my-engine-id") {
+ 
+-			@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++			@SuppressWarnings("DataFlowIssue")
+ 			@Override
+ 			public TestDescriptor discover(EngineDiscoveryRequest discoveryRequest, UniqueId uniqueId) {
+ 				try {
+diff --git a/platform-tests/src/test/java/org/junit/platform/launcher/core/LauncherConfigTests.java b/platform-tests/src/test/java/org/junit/platform/launcher/core/LauncherConfigTests.java
+index 7b3a92d90e5b..0dda349b3b01 100644
+--- a/platform-tests/src/test/java/org/junit/platform/launcher/core/LauncherConfigTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/launcher/core/LauncherConfigTests.java
+@@ -30,7 +30,7 @@
+  */
+ class LauncherConfigTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void preconditions() {
+ 		assertThrows(PreconditionViolationException.class,
+diff --git a/platform-tests/src/test/java/org/junit/platform/launcher/core/LauncherConfigurationParametersTests.java b/platform-tests/src/test/java/org/junit/platform/launcher/core/LauncherConfigurationParametersTests.java
+index 1ade0e0721de..62f2d578994d 100644
+--- a/platform-tests/src/test/java/org/junit/platform/launcher/core/LauncherConfigurationParametersTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/launcher/core/LauncherConfigurationParametersTests.java
+@@ -60,7 +60,7 @@ void reset() {
+ 		System.clearProperty(KEY);
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void constructorPreconditions() {
+ 		assertThrows(PreconditionViolationException.class, () -> fromMap(null));
+@@ -69,7 +69,7 @@ void constructorPreconditions() {
+ 		assertThrows(PreconditionViolationException.class, () -> fromMapAndFile(Map.of(), "  "));
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void getPreconditions() {
+ 		ConfigurationParameters configParams = fromMap(Map.of());
+diff --git a/platform-tests/src/test/java/org/junit/platform/launcher/core/LauncherFactoryTests.java b/platform-tests/src/test/java/org/junit/platform/launcher/core/LauncherFactoryTests.java
+index 18093ec55367..96ce0271adda 100644
+--- a/platform-tests/src/test/java/org/junit/platform/launcher/core/LauncherFactoryTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/launcher/core/LauncherFactoryTests.java
+@@ -63,7 +63,7 @@
+  */
+ class LauncherFactoryTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void preconditions() {
+ 		assertThrows(PreconditionViolationException.class, () -> LauncherFactory.create(null));
+diff --git a/platform-tests/src/test/java/org/junit/platform/launcher/core/ListenerRegistryTests.java b/platform-tests/src/test/java/org/junit/platform/launcher/core/ListenerRegistryTests.java
+index 9f7052c2fd06..c60475a6196f 100644
+--- a/platform-tests/src/test/java/org/junit/platform/launcher/core/ListenerRegistryTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/launcher/core/ListenerRegistryTests.java
+@@ -20,7 +20,7 @@
+ 
+ public class ListenerRegistryTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void registerWithNullArray() {
+ 		var registry = ListenerRegistry.create(List::getFirst);
+@@ -39,7 +39,7 @@ void registerWithEmptyArray() {
+ 		assertThat(exception).hasMessageContaining("listeners array must not be null or empty");
+ 	}
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void registerWithArrayContainingNullElements() {
+ 		var registry = ListenerRegistry.create(List::getFirst);
+diff --git a/platform-tests/src/test/java/org/junit/platform/testkit/engine/NestedContainerEventConditionTests.java b/platform-tests/src/test/java/org/junit/platform/testkit/engine/NestedContainerEventConditionTests.java
+index dcece1a3a020..a5dab8cf8538 100644
+--- a/platform-tests/src/test/java/org/junit/platform/testkit/engine/NestedContainerEventConditionTests.java
++++ b/platform-tests/src/test/java/org/junit/platform/testkit/engine/NestedContainerEventConditionTests.java
+@@ -41,7 +41,7 @@
+  */
+ class NestedContainerEventConditionTests {
+ 
+-	@SuppressWarnings({ "DataFlowIssue", "NullAway" })
++	@SuppressWarnings("DataFlowIssue")
+ 	@Test
+ 	void preconditions() {
+ 		assertThatExceptionOfType(PreconditionViolationException.class)//

@@ -1,0 +1,6 @@
+{
+  "title": "git: Resolve relative path in PlainInit",
+  "description": "Fixes #1610.\r\nSupersedes #1611.",
+  "base_branch": "main",
+  "head_branch": "issue1610"
+}

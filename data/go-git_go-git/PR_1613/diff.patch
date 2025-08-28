@@ -1,0 +1,51 @@
+From 5a56c18c924f8f1cbbd6f7d0690ed7e894019747 Mon Sep 17 00:00:00 2001
+From: Paulo Gomes <pjbgf@linux.com>
+Date: Sun, 27 Jul 2025 07:26:26 +0100
+Subject: [PATCH] git: Resolve relative path in PlainInit. Fixes #1610
+
+Signed-off-by: Paulo Gomes <pjbgf@linux.com>
+---
+ repository.go      | 9 +++++++++
+ repository_test.go | 9 +++++++--
+ 2 files changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/repository.go b/repository.go
+index d584fcdaa..c2e361cd2 100644
+--- a/repository.go
++++ b/repository.go
+@@ -289,6 +289,15 @@ func PlainInit(path string, isBare bool, options ...InitOption) (*Repository, er
+ 		oFn(&o)
+ 	}
+ 
++	var err error
++	// go-git/go-git#1610
++	if !filepath.IsAbs(path) {
++		path, err = filepath.Abs(path)
++		if err != nil {
++			return nil, err
++		}
++	}
++
+ 	if isBare {
+ 		dot = osfs.New(path, osfs.WithBoundOS())
+ 		initFn = func(s *filesystem.Storage) (*Repository, error) {
+diff --git a/repository_test.go b/repository_test.go
+index b566f3a7c..96a9b33fb 100644
+--- a/repository_test.go
++++ b/repository_test.go
+@@ -902,8 +902,13 @@ func (s *RepositorySuite) TestPlainOpenNotExistsDetectDotGit() {
+ }
+ 
+ func (s *RepositorySuite) TestPlainClone() {
+-	dir, err := os.MkdirTemp("", "")
+-	s.NoError(err)
++	dir := "rel-dir"
++	err := os.Mkdir(dir, 0o755)
++	s.Require().NoError(err)
++
++	s.T().Cleanup(func() {
++		os.RemoveAll(dir)
++	})
+ 
+ 	r, err := PlainClone(dir, &CloneOptions{
+ 		URL: s.GetBasicLocalRepositoryURL(),

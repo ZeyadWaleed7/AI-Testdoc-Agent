@@ -1,0 +1,40 @@
+diff --git a/repository.go b/repository.go
+index d584fcdaa..c2e361cd2 100644
+--- a/repository.go
++++ b/repository.go
+@@ -289,6 +289,15 @@ func PlainInit(path string, isBare bool, options ...InitOption) (*Repository, er
+ 		oFn(&o)
+ 	}
+ 
++	var err error
++	// go-git/go-git#1610
++	if !filepath.IsAbs(path) {
++		path, err = filepath.Abs(path)
++		if err != nil {
++			return nil, err
++		}
++	}
++
+ 	if isBare {
+ 		dot = osfs.New(path, osfs.WithBoundOS())
+ 		initFn = func(s *filesystem.Storage) (*Repository, error) {
+diff --git a/repository_test.go b/repository_test.go
+index b566f3a7c..96a9b33fb 100644
+--- a/repository_test.go
++++ b/repository_test.go
+@@ -902,8 +902,13 @@ func (s *RepositorySuite) TestPlainOpenNotExistsDetectDotGit() {
+ }
+ 
+ func (s *RepositorySuite) TestPlainClone() {
+-	dir, err := os.MkdirTemp("", "")
+-	s.NoError(err)
++	dir := "rel-dir"
++	err := os.Mkdir(dir, 0o755)
++	s.Require().NoError(err)
++
++	s.T().Cleanup(func() {
++		os.RemoveAll(dir)
++	})
+ 
+ 	r, err := PlainClone(dir, &CloneOptions{
+ 		URL: s.GetBasicLocalRepositoryURL(),
