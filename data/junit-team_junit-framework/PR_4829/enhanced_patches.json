@@ -1,0 +1,83 @@
+{
+  "documentation/src/docs/asciidoc/release-notes/release-notes-6.0.0-RC1.adoc": {
+    "status": "modified",
+    "patch": "@@ -26,8 +26,7 @@ repository on GitHub.\n [[release-notes-6.0.0-RC1-junit-platform-new-features-and-improvements]]\n ==== New Features and Improvements\n \n-* \u2753\n-\n+* Prune stack traces up to test or lifecycle method\n \n [[release-notes-6.0.0-RC1-junit-jupiter]]\n === JUnit Jupiter",
+    "additions": 1,
+    "deletions": 2,
+    "changes": 3,
+    "language": "adoc",
+    "imports": [],
+    "full_content": "[[release-notes-6.0.0-RC1]]\n== 6.0.0-RC1\n\n*Date of Release:* \u2753\n\n*Scope:* \u2753\n\nFor a complete list of all _closed_ issues and pull requests for this release, consult the\nlink:{junit-framework-repo}+/milestone/102?closed=1+[6.0.0-RC1] milestone page in the JUnit\nrepository on GitHub.\n\n\n[[release-notes-6.0.0-RC1-junit-platform]]\n=== JUnit Platform\n\n[[release-notes-6.0.0-RC1-junit-platform-bug-fixes]]\n==== Bug Fixes\n\n* \u2753\n\n[[release-notes-6.0.0-RC1-junit-platform-deprecations-and-breaking-changes]]\n==== Deprecations and Breaking Changes\n\n* \u2753\n\n[[release-notes-6.0.0-RC1-junit-platform-new-features-and-improvements]]\n==== New Features and Improvements\n\n* Prune stack traces up to test or lifecycle method\n\n[[release-notes-6.0.0-RC1-junit-jupiter]]\n=== JUnit Jupiter\n\n[[release-notes-6.0.0-RC1-junit-jupiter-bug-fixes]]\n==== Bug Fixes\n\n* CSV headers are now properly supported with the default display name pattern and the\n  explicit `{argumentsWithNames}` display name pattern for parameterized tests that\n  utilize the `useHeadersInDisplayName` flag in `@CsvSource` and `@CsvFileSource`.\n  Specifically, the parameter name is no longer duplicated in the display name when a CSV\n  header is desired instead.\n\n[[release-notes-6.0.0-RC1-junit-jupiter-deprecations-and-breaking-changes]]\n==== Deprecations and Breaking Changes\n\n* \u2753\n\n[[release-notes-6.0.0-RC1-junit-jupiter-new-features-and-improvements]]\n==== New Features and Improvements\n\n* Text-based arguments in display names for parameterized tests are now quoted by default.\n  In addition, special characters are escaped within quoted text. Please refer to the\n  <<../user-guide/index.adoc#writing-tests-parameterized-tests-display-names-quoted-text,\n  User Guide>> for details.\n\n\n[[release-notes-6.0.0-RC1-junit-vintage]]\n=== JUnit Vintage\n\n[[release-notes-6.0.0-RC1-junit-vintage-bug-fixes]]\n==== Bug Fixes\n\n* \u2753\n\n[[release-notes-6.0.0-RC1-junit-vintage-deprecations-and-breaking-changes]]\n==== Deprecations and Breaking Changes\n\n* \u2753\n\n[[release-no",
+    "raw_url": "https://github.com/junit-team/junit-framework/raw/13d039dddce7c6a20f37e933fb7953807a23b01c/documentation%2Fsrc%2Fdocs%2Fasciidoc%2Frelease-notes%2Frelease-notes-6.0.0-RC1.adoc",
+    "is_test_file": false
+  },
+  "junit-platform-commons/src/main/java/org/junit/platform/commons/util/ExceptionUtils.java": {
+    "status": "modified",
+    "patch": "@@ -97,11 +97,15 @@ public static String readStackTrace(Throwable throwable) {\n \t}\n \n \t/**\n-\t * Prune the stack trace of the supplied {@link Throwable} by removing\n-\t * {@linkplain StackTraceElement stack trace elements} from the {@code org.junit},\n-\t * {@code jdk.internal.reflect}, and {@code sun.reflect} packages. If a\n-\t * {@code StackTraceElement} matching one of the supplied {@code classNames}\n-\t * is encountered, all subsequent elements in the stack trace will be retained.\n+\t * Prune the stack trace of the supplied {@link Throwable}.\n+\t *\n+\t * <p>Prune all {@linkplain StackTraceElement stack trace elements} up one\n+\t * of the supplied {@code classNames} are pruned. All subsequent elements\n+\t * in the stack trace will be retained.\n+\t *\n+\t * <p>If the {@code classNames} do not match any of the stacktrace elements\n+\t * then the {@code org.junit}, {@code jdk.internal.reflect}, and\n+\t * {@code sun.reflect} packages are pruned.\n \t *\n \t * <p>Additionally, all elements prior to and including the first JUnit Platform\n \t * Launcher call will be removed.\n@@ -128,6 +132,9 @@ public static void pruneStackTrace(Throwable throwable, List<String> classNames)\n \t\t\tString className = element.getClassName();\n \n \t\t\tif (classNames.contains(className)) {\n+\t\t\t\t// We found the test\n+\t\t\t\t// everything before that is not informative.\n+\t\t\t\tprunedStackTrace.clear();\n \t\t\t\t// Include all elements called by the test\n \t\t\t\tprunedStackTrace.addAll(stackTrace.subList(i, stackTrace.size()));\n \t\t\t\tbreak;",
+    "additions": 12,
+    "deletions": 5,
+    "changes": 17,
+    "language": "java",
+    "imports": [
+      "import static org.apiguardian.api.API.Status.INTERNAL;",
+      "import java.io.PrintWriter;",
+      "import java.io.StringWriter;",
+      "import java.util.ArrayDeque;",
+      "import java.util.ArrayList;",
+      "import java.util.Arrays;",
+      "import java.util.Collections;",
+      "import java.util.Deque;",
+      "import java.util.LinkedHashSet;",
+      "import java.util.List;"
+    ],
+    "full_content": "/*\n * Copyright 2015-2025 the original author or authors.\n *\n * All rights reserved. This program and the accompanying materials are\n * made available under the terms of the Eclipse Public License v2.0 which\n * accompanies this distribution and is available at\n *\n * https://www.eclipse.org/legal/epl-v20.html\n */\n\npackage org.junit.platform.commons.util;\n\nimport static org.apiguardian.api.API.Status.INTERNAL;\n\nimport java.io.PrintWriter;\nimport java.io.StringWriter;\nimport java.util.ArrayDeque;\nimport java.util.ArrayList;\nimport java.util.Arrays;\nimport java.util.Collections;\nimport java.util.Deque;\nimport java.util.LinkedHashSet;\nimport java.util.List;\nimport java.util.Set;\nimport java.util.function.Predicate;\n\nimport org.apiguardian.api.API;\nimport org.junit.platform.commons.annotation.Contract;\n\n/**\n * Collection of utilities for working with exceptions.\n *\n * <h2>DISCLAIMER</h2>\n *\n * <p>These utilities are intended solely for usage within the JUnit framework\n * itself. <strong>Any usage by external parties is not supported.</strong>\n * Use at your own risk!\n *\n * @since 1.0\n */\n@API(status = INTERNAL, since = \"1.0\")\npublic final class ExceptionUtils {\n\n\tprivate static final String JUNIT_PLATFORM_LAUNCHER_PACKAGE_PREFIX = \"org.junit.platform.launcher.\";\n\n\tprivate static final Predicate<String> STACK_TRACE_ELEMENT_FILTER = ClassNamePatternFilterUtils //\n\t\t\t.excludeMatchingClassNames(\"org.junit.*,jdk.internal.reflect.*,sun.reflect.*\");\n\n\tprivate ExceptionUtils() {\n\t\t/* no-op */\n\t}\n\n\t/**\n\t * Throw the supplied {@link Throwable}, <em>masked</em> as an\n\t * unchecked exception.\n\t *\n\t * <p>The supplied {@code Throwable} will not be wrapped. Rather, it\n\t * will be thrown <em>as is</em> using an exploit of the Java language\n\t * that relies on a combination of generics and type erasure to trick\n\t * the Java compiler into believing that the thrown exception is an\n\t * unchecked exception even if it is a checked exception.\n\t *\n\t * <h4>Warning</h4>\n\t *\n\t * <p>This method shoul",
+    "raw_url": "https://github.com/junit-team/junit-framework/raw/13d039dddce7c6a20f37e933fb7953807a23b01c/junit-platform-commons%2Fsrc%2Fmain%2Fjava%2Forg%2Fjunit%2Fplatform%2Fcommons%2Futil%2FExceptionUtils.java",
+    "is_test_file": false
+  },
+  "junit-platform-launcher/src/main/java/org/junit/platform/launcher/core/StackTracePruningEngineExecutionListener.java": {
+    "status": "modified",
+    "patch": "@@ -13,6 +13,7 @@\n import java.util.List;\n import java.util.Objects;\n import java.util.Optional;\n+import java.util.stream.Stream;\n \n import org.junit.platform.commons.util.ExceptionUtils;\n import org.junit.platform.engine.EngineExecutionListener;\n@@ -46,8 +47,9 @@ public void executionFinished(TestDescriptor testDescriptor, TestExecutionResult\n \t}\n \n \tprivate static List<String> getTestClassNames(TestDescriptor testDescriptor) {\n-\t\treturn testDescriptor.getAncestors() //\n-\t\t\t\t.stream() //\n+\t\tStream<? extends TestDescriptor> self = Stream.of(testDescriptor);\n+\t\tStream<? extends TestDescriptor> ancestors = testDescriptor.getAncestors().stream();\n+\t\treturn Stream.concat(self, ancestors) //\n \t\t\t\t.map(TestDescriptor::getSource) //\n \t\t\t\t.flatMap(Optional::stream) //\n \t\t\t\t.map(source -> {",
+    "additions": 4,
+    "deletions": 2,
+    "changes": 6,
+    "language": "java",
+    "imports": [
+      "import java.util.List;",
+      "import java.util.Objects;",
+      "import java.util.Optional;",
+      "import java.util.stream.Stream;",
+      "import org.junit.platform.commons.util.ExceptionUtils;",
+      "import org.junit.platform.engine.EngineExecutionListener;",
+      "import org.junit.platform.engine.TestDescriptor;",
+      "import org.junit.platform.engine.TestExecutionResult;",
+      "import org.junit.platform.engine.support.descriptor.ClassSource;",
+      "import org.junit.platform.engine.support.descriptor.MethodSource;"
+    ],
+    "full_content": "/*\n * Copyright 2015-2025 the original author or authors.\n *\n * All rights reserved. This program and the accompanying materials are\n * made available under the terms of the Eclipse Public License v2.0 which\n * accompanies this distribution and is available at\n *\n * https://www.eclipse.org/legal/epl-v20.html\n */\n\npackage org.junit.platform.launcher.core;\n\nimport java.util.List;\nimport java.util.Objects;\nimport java.util.Optional;\nimport java.util.stream.Stream;\n\nimport org.junit.platform.commons.util.ExceptionUtils;\nimport org.junit.platform.engine.EngineExecutionListener;\nimport org.junit.platform.engine.TestDescriptor;\nimport org.junit.platform.engine.TestExecutionResult;\nimport org.junit.platform.engine.support.descriptor.ClassSource;\nimport org.junit.platform.engine.support.descriptor.MethodSource;\n\n/**\n * Prunes the stack trace in case of a failed event.\n *\n * @since 1.10\n * @see org.junit.platform.commons.util.ExceptionUtils#pruneStackTrace(Throwable, List)\n */\nclass StackTracePruningEngineExecutionListener extends DelegatingEngineExecutionListener {\n\n\tStackTracePruningEngineExecutionListener(EngineExecutionListener delegate) {\n\t\tsuper(delegate);\n\t}\n\n\t@Override\n\tpublic void executionFinished(TestDescriptor testDescriptor, TestExecutionResult testExecutionResult) {\n\t\tList<String> testClassNames = getTestClassNames(testDescriptor);\n\t\tif (testExecutionResult.getThrowable().isPresent()) {\n\t\t\tThrowable throwable = testExecutionResult.getThrowable().get();\n\n\t\t\tExceptionUtils.findNestedThrowables(throwable).forEach(\n\t\t\t\tt -> ExceptionUtils.pruneStackTrace(t, testClassNames));\n\t\t}\n\t\tsuper.executionFinished(testDescriptor, testExecutionResult);\n\t}\n\n\tprivate static List<String> getTestClassNames(TestDescriptor testDescriptor) {\n\t\tStream<? extends TestDescriptor> self = Stream.of(testDescriptor);\n\t\tStream<? extends TestDescriptor> ancestors = testDescriptor.getAncestors().stream();\n\t\treturn Stream.concat(self, ancestors) //\n\t\t\t\t.map(TestDescriptor::getSource) //\n\t\t\t\t.fla",
+    "raw_url": "https://github.com/junit-team/junit-framework/raw/13d039dddce7c6a20f37e933fb7953807a23b01c/junit-platform-launcher%2Fsrc%2Fmain%2Fjava%2Forg%2Fjunit%2Fplatform%2Flauncher%2Fcore%2FStackTracePruningEngineExecutionListener.java",
+    "is_test_file": false
+  },
+  "platform-tests/src/test/java/org/junit/platform/StackTracePruningTests.java": {
+    "status": "modified",
+    "patch": "@@ -115,7 +115,7 @@ void shouldAlwaysKeepJupiterAssumptionStackTraceElement() {\n \t}\n \n \t@Test\n-\tvoid shouldKeepEverythingAfterTestCall() {\n+\tvoid shouldKeepExactlyEverythingAfterTestCall() {\n \t\tEngineExecutionResults results = EngineTestKit.engine(\"junit-jupiter\") //\n \t\t\t\t.configurationParameter(\"junit.platform.stacktrace.pruning.enabled\", \"true\") //\n \t\t\t\t.selectors(selectMethod(FailingTestTestCase.class, \"failingAssertion\")) //\n@@ -128,15 +128,14 @@ void shouldKeepEverythingAfterTestCall() {\n \t\t\t\t\t\\\\Qorg.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:\\\\E.+\n \t\t\t\t\t\\\\Qorg.junit.jupiter.api.Assertions.fail(Assertions.java:\\\\E.+\n \t\t\t\t\t\\\\Qorg.junit.platform.StackTracePruningTests$FailingTestTestCase.failingAssertion(StackTracePruningTests.java:\\\\E.+\n-\t\t\t\t\t>>>>\n \t\t\t\t\t\"\"\");\n \t}\n \n \t@ParameterizedTest\n \t@ValueSource(strings = { \"org.junit.platform.StackTracePruningTests$FailingBeforeEachTestCase\",\n \t\t\t\"org.junit.platform.StackTracePruningTests$FailingBeforeEachTestCase$NestedTestCase\",\n \t\t\t\"org.junit.platform.StackTracePruningTests$FailingBeforeEachTestCase$NestedTestCase$NestedNestedTestCase\" })\n-\tvoid shouldKeepEverythingAfterLifecycleMethodCall(Class<?> methodClass) {\n+\tvoid shouldKeepExactlyEverythingAfterLifecycleMethodCall(Class<?> methodClass) {\n \t\tEngineExecutionResults results = EngineTestKit.engine(\"junit-jupiter\") //\n \t\t\t\t.configurationParameter(\"junit.platform.stacktrace.pruning.enabled\", \"true\") //\n \t\t\t\t.selectors(selectMethod(methodClass, \"test\")) //\n@@ -149,7 +148,6 @@ void shouldKeepEverythingAfterLifecycleMethodCall(Class<?> methodClass) {\n \t\t\t\t\t\\\\Qorg.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:\\\\E.+\n \t\t\t\t\t\\\\Qorg.junit.jupiter.api.Assertions.fail(Assertions.java:\\\\E.+\n \t\t\t\t\t\\\\Qorg.junit.platform.StackTracePruningTests$FailingBeforeEachTestCase.setUp(StackTracePruningTests.java:\\\\E.+\n-\t\t\t\t\t>>>>\n \t\t\t\t\t\"\"\");\n \t}\n ",
+    "additions": 2,
+    "deletions": 4,
+    "changes": 6,
+    "language": "java",
+    "imports": [
+      "import static org.assertj.core.api.Assertions.assertThat;",
+      "import static org.junit.jupiter.api.Assertions.assertLinesMatch;",
+      "import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;",
+      "import java.util.Arrays;",
+      "import java.util.List;",
+      "import java.util.stream.Collectors;",
+      "import org.junit.jupiter.api.Assertions;",
+      "import org.junit.jupiter.api.Assumptions;",
+      "import org.junit.jupiter.api.BeforeEach;",
+      "import org.junit.jupiter.api.Nested;"
+    ],
+    "full_content": "/*\n * Copyright 2015-2025 the original author or authors.\n *\n * All rights reserved. This program and the accompanying materials are\n * made available under the terms of the Eclipse Public License v2.0 which\n * accompanies this distribution and is available at\n *\n * https://www.eclipse.org/legal/epl-v20.html\n */\n\npackage org.junit.platform;\n\nimport static org.assertj.core.api.Assertions.assertThat;\nimport static org.junit.jupiter.api.Assertions.assertLinesMatch;\nimport static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;\n\nimport java.util.Arrays;\nimport java.util.List;\nimport java.util.stream.Collectors;\n\nimport org.junit.jupiter.api.Assertions;\nimport org.junit.jupiter.api.Assumptions;\nimport org.junit.jupiter.api.BeforeEach;\nimport org.junit.jupiter.api.Nested;\nimport org.junit.jupiter.api.Test;\nimport org.junit.jupiter.params.ParameterizedTest;\nimport org.junit.jupiter.params.provider.ValueSource;\nimport org.junit.platform.engine.TestExecutionResult;\nimport org.junit.platform.testkit.engine.EngineExecutionResults;\nimport org.junit.platform.testkit.engine.EngineTestKit;\n\n/**\n * Test cases for stacktrace pruning.\n *\n * <p>Note: the package {@code org.junit.platform} this class resides in is\n * chosen on purpose. If it was in {@code org.junit.platform.launcher}\n * stack traces would be fully pruned.\n *\n * @since 5.10\n */\nclass StackTracePruningTests {\n\n\t@Test\n\tvoid shouldPruneStackTraceByDefault() {\n\t\tEngineExecutionResults results = EngineTestKit.engine(\"junit-jupiter\") //\n\t\t\t\t.selectors(selectMethod(FailingTestTestCase.class, \"failingAssertion\")) //\n\t\t\t\t.execute();\n\n\t\tList<StackTraceElement> stackTrace = extractStackTrace(results);\n\n\t\tassertStackTraceDoesNotContain(stackTrace,\n\t\t\t\"jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:\");\n\t}\n\n\t@Test\n\tvoid shouldPruneStackTraceWhenEnabled() {\n\t\tEngineExecutionResults results = EngineTestKit.engine(\"junit-jupiter\") //\n\t\t\t\t.configurationParameter(\"junit.platform.stac",
+    "raw_url": "https://github.com/junit-team/junit-framework/raw/13d039dddce7c6a20f37e933fb7953807a23b01c/platform-tests%2Fsrc%2Ftest%2Fjava%2Forg%2Fjunit%2Fplatform%2FStackTracePruningTests.java",
+    "is_test_file": true
+  }
+}

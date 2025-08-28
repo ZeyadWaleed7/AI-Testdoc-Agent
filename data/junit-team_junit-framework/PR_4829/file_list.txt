@@ -1,0 +1,4 @@
+documentation/src/docs/asciidoc/release-notes/release-notes-6.0.0-RC1.adoc
+junit-platform-commons/src/main/java/org/junit/platform/commons/util/ExceptionUtils.java
+junit-platform-launcher/src/main/java/org/junit/platform/launcher/core/StackTracePruningEngineExecutionListener.java
+platform-tests/src/test/java/org/junit/platform/StackTracePruningTests.java

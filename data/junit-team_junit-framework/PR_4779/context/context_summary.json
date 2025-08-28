@@ -1,0 +1,47 @@
+{
+  "pr_title": "Use `DataFlowIssue` as suppression name alias for `NullAway`",
+  "total_files_changed": 30,
+  "languages": [
+    "kts",
+    "java"
+  ],
+  "main_changes": [
+    {
+      "file": "documentation/src/test/java/example/session/HttpTests.java",
+      "status": "modified",
+      "changes": 2,
+      "language": "java",
+      "is_test_file": true
+    },
+    {
+      "file": "documentation/src/test/java/example/sharedresources/SharedResourceDemo.java",
+      "status": "modified",
+      "changes": 2,
+      "language": "java",
+      "is_test_file": true
+    },
+    {
+      "file": "documentation/src/test/java/example/timing/TimingExtension.java",
+      "status": "modified",
+      "changes": 2,
+      "language": "java",
+      "is_test_file": true
+    },
+    {
+      "file": "gradle/plugins/common/src/main/kotlin/junitbuild.java-nullability-conventions.gradle.kts",
+      "status": "modified",
+      "changes": 2,
+      "language": "kts",
+      "is_test_file": false
+    },
+    {
+      "file": "junit-jupiter-api/src/main/java/org/junit/jupiter/api/condition/MethodBasedCondition.java",
+      "status": "modified",
+      "changes": 2,
+      "language": "java",
+      "is_test_file": false
+    }
+  ],
+  "existing_test_files": 28,
+  "test_files_saved": 28
+}

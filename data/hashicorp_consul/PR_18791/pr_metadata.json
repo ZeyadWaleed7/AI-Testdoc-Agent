@@ -1,0 +1,6 @@
+{
+  "title": "Retry and timeout test acceptance test",
+  "description": "### Description\r\n- Added test to exersize new retry/timeout functionality \r\n\r\n### Testing & Reproduction steps\r\n CI Passes\r\n\r\n### Links\r\n\r\n\r\n### PR Checklist\r\n\r\n* [ X ] updated test coverage\r\n* [ ] external facing docs updated\r\n* [ ] appropriate backport labels added\r\n* [ ] not a security concern\r\n",
+  "base_branch": "main",
+  "head_branch": "NET-5208-retry-timeout-e2e"
+}

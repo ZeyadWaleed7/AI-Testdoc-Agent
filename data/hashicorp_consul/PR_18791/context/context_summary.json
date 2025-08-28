@@ -1,0 +1,39 @@
+{
+  "pr_title": "Retry and timeout test acceptance test",
+  "total_files_changed": 4,
+  "languages": [
+    "go"
+  ],
+  "main_changes": [
+    {
+      "file": "test/integration/consul-container/libs/service/common.go",
+      "status": "modified",
+      "changes": 2,
+      "language": "go",
+      "is_test_file": true
+    },
+    {
+      "file": "test/integration/consul-container/libs/service/examples.go",
+      "status": "modified",
+      "changes": 2,
+      "language": "go",
+      "is_test_file": true
+    },
+    {
+      "file": "test/integration/consul-container/test/gateways/gateway_endpoint_test.go",
+      "status": "modified",
+      "changes": 10,
+      "language": "go",
+      "is_test_file": true
+    },
+    {
+      "file": "test/integration/consul-container/test/gateways/http_route_test.go",
+      "status": "modified",
+      "changes": 232,
+      "language": "go",
+      "is_test_file": true
+    }
+  ],
+  "existing_test_files": 4,
+  "test_files_saved": 4
+}

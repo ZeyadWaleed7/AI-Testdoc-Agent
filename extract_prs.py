@@ -20,12 +20,12 @@ PATCH_HEADERS = {
 }
 
 REPOS = [
-    {"owner": "", "": "", "prs": []},
+    {"owner": "", "repo": "", "prs": []},
 ]
 
 BASE_OUTPUT_PATH = "data"
-TEST_EXTENSIONS = [".py", ".cpp", ".c", ".js", ".ts", ".java", ".rb"]
-TEST_KEYWORDS = ["test", "spec", "Test"]
+TEST_EXTENSIONS = [".py", ".cpp", ".c", ".js", ".ts", ".java", ".rb",".go"]
+TEST_KEYWORDS = ["test", "spec", "Test", "_test"]
 
 def get_file_content(owner, repo, path, ref="main"):
     """Get full file content for context"""
