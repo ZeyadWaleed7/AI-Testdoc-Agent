@@ -851,12 +851,6 @@ GENERATE THE COMPLETE TEST FILE NOW - NO EXCUSES, NO EXPLANATIONS, ONLY COMPLETE
     def _save_documentation_file(self, file_path: str, language: str, doc_content: str, strategy: str, enhanced_context: EnhancedContextLoader) -> None:
         """Save documentation file for a test file"""
         try:
-            # Validate strategy parameter - only allow valid strategy names
-            valid_strategies = ["naive", "few-shot", "cot", "diff-aware"]
-            if strategy not in valid_strategies:
-                logging.error(f"INVALID STRATEGY '{strategy}' - skipping doc save. Valid strategies: {valid_strategies}")
-                return
-                
             pr_data_path = enhanced_context.pr_data_path
             doc_dir = pr_data_path / "deepseek_coder" / strategy
 
