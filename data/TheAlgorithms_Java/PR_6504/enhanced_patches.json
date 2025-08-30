@@ -1,0 +1,61 @@
+{
+  "src/main/java/com/thealgorithms/strings/ReverseString.java": {
+    "status": "modified",
+    "patch": "@@ -86,4 +86,17 @@ public static String reverseStringUsingStack(String str) {\n         }\n         return reversedString.toString();\n     }\n+\n+    /**\n+     * Reverse the String using Recursion\n+     * @param str string to be reversed\n+     * @return reversed string\n+     */\n+    public static String reverseStringUsingRecursion(String str) {\n+        if (str.isEmpty()) {\n+            return str;\n+        } else {\n+            return reverseStringUsingRecursion(str.substring(1)) + str.charAt(0);\n+        }\n+    }\n }",
+    "additions": 13,
+    "deletions": 0,
+    "changes": 13,
+    "language": "java",
+    "imports": [
+      "import java.util.Stack;"
+    ],
+    "full_content": "package com.thealgorithms.strings;\n\nimport java.util.Stack;\n\n/**\n * Reverse String using different version\n */\npublic final class ReverseString {\n    private ReverseString() {\n    }\n\n    /**\n     * easiest way to reverses the string str and returns it\n     *\n     * @param str string to be reversed\n     * @return reversed string\n     */\n    public static String reverse(String str) {\n        return new StringBuilder(str).reverse().toString();\n    }\n\n    /**\n     * second way to reverses the string str and returns it\n     *\n     * @param str string to be reversed\n     * @return reversed string\n     */\n    public static String reverse2(String str) {\n        if (str == null || str.isEmpty()) {\n            return str;\n        }\n\n        char[] value = str.toCharArray();\n        for (int i = 0, j = str.length() - 1; i < j; i++, j--) {\n            char temp = value[i];\n            value[i] = value[j];\n            value[j] = temp;\n        }\n        return new String(value);\n    }\n\n    /**\n     * Reverse version 3 the given string using a StringBuilder.\n     * This method converts the string to a character array,\n     * iterates through it in reverse order, and appends each character\n     * to a StringBuilder.\n     *\n     * @param string The input string to be reversed.\n     * @return The reversed string.\n     */\n    public static String reverse3(String string) {\n        if (string.isEmpty()) {\n            return string;\n        }\n        char[] chars = string.toCharArray();\n        StringBuilder sb = new StringBuilder();\n        for (int i = string.length() - 1; i >= 0; i--) {\n            sb.append(chars[i]);\n        }\n        return sb.toString();\n    }\n    /**\n     * Reverses the given string using a stack.\n     * This method uses a stack to reverse the characters of the string.\n     * * @param str The input string to be reversed.\n     * @return The reversed string.\n     */\n    public static String reverseStringUsingStack(String str) {\n        // Check if the input string ",
+    "raw_url": "https://github.com/TheAlgorithms/Java/raw/511daff5277cbce4830297dacd5226dea4c39629/src%2Fmain%2Fjava%2Fcom%2Fthealgorithms%2Fstrings%2FReverseString.java",
+    "is_test_file": false
+  },
+  "src/main/java/com/thealgorithms/strings/ReverseStringRecursive.java": {
+    "status": "removed",
+    "patch": "@@ -1,21 +0,0 @@\n-package com.thealgorithms.strings;\n-\n-/**\n- * Reverse String using Recursion\n- */\n-public final class ReverseStringRecursive {\n-    private ReverseStringRecursive() {\n-    }\n-\n-    /**\n-     * @param str string to be reversed\n-     * @return reversed string\n-     */\n-    public static String reverse(String str) {\n-        if (str.isEmpty()) {\n-            return str;\n-        } else {\n-            return reverse(str.substring(1)) + str.charAt(0);\n-        }\n-    }\n-}",
+    "additions": 0,
+    "deletions": 21,
+    "changes": 21,
+    "language": "java",
+    "imports": [],
+    "full_content": null,
+    "raw_url": "https://github.com/TheAlgorithms/Java/raw/e78d53d747b12f72d7394484b1433783e7e55fc2/src%2Fmain%2Fjava%2Fcom%2Fthealgorithms%2Fstrings%2FReverseStringRecursive.java",
+    "is_test_file": false
+  },
+  "src/test/java/com/thealgorithms/strings/ReverseStringRecursiveTest.java": {
+    "status": "removed",
+    "patch": "@@ -1,16 +0,0 @@\n-package com.thealgorithms.strings;\n-\n-import static org.junit.jupiter.api.Assertions.assertEquals;\n-\n-import org.junit.jupiter.params.ParameterizedTest;\n-import org.junit.jupiter.params.provider.CsvSource;\n-\n-public class ReverseStringRecursiveTest {\n-    @ParameterizedTest\n-    @CsvSource({\"'Hello World', 'dlroW olleH'\", \"'helloworld', 'dlrowolleh'\", \"'123456789', '987654321'\", \"'', ''\", \"'A', 'A'\", \"'!123 ABC xyz!', '!zyx CBA 321!'\", \"'Abc 123 Xyz', 'zyX 321 cbA'\", \"'12.34,56;78:90', '09:87;65,43.21'\", \"'abcdEFGHiJKL', 'LKJiHGFEdcba'\",\n-        \"'MixOf123AndText!', '!txeTdnA321fOxiM'\"})\n-    public void\n-    testReverseString(String input, String expectedOutput) {\n-        assertEquals(expectedOutput, ReverseStringRecursive.reverse(input));\n-    }\n-}",
+    "additions": 0,
+    "deletions": 16,
+    "changes": 16,
+    "language": "java",
+    "imports": [],
+    "full_content": null,
+    "raw_url": "https://github.com/TheAlgorithms/Java/raw/e78d53d747b12f72d7394484b1433783e7e55fc2/src%2Ftest%2Fjava%2Fcom%2Fthealgorithms%2Fstrings%2FReverseStringRecursiveTest.java",
+    "is_test_file": true
+  },
+  "src/test/java/com/thealgorithms/strings/ReverseStringTest.java": {
+    "status": "modified",
+    "patch": "@@ -7,6 +7,7 @@\n import org.junit.jupiter.api.Test;\n import org.junit.jupiter.params.ParameterizedTest;\n import org.junit.jupiter.params.provider.Arguments;\n+import org.junit.jupiter.params.provider.CsvSource;\n import org.junit.jupiter.params.provider.MethodSource;\n \n public class ReverseStringTest {\n@@ -44,4 +45,12 @@ public void testReverseStringUsingStack(String input, String expectedOutput) {\n     public void testReverseStringUsingStackWithNullInput() {\n         assertThrows(IllegalArgumentException.class, () -> ReverseString.reverseStringUsingStack(null));\n     }\n+\n+    @ParameterizedTest\n+    @CsvSource({\"'Hello World', 'dlroW olleH'\", \"'helloworld', 'dlrowolleh'\", \"'123456789', '987654321'\", \"'', ''\", \"'A', 'A'\", \"'!123 ABC xyz!', '!zyx CBA 321!'\", \"'Abc 123 Xyz', 'zyX 321 cbA'\", \"'12.34,56;78:90', '09:87;65,43.21'\", \"'abcdEFGHiJKL', 'LKJiHGFEdcba'\",\n+        \"'MixOf123AndText!', '!txeTdnA321fOxiM'\"})\n+    public void\n+    testReverseStringUsingRecursion(String input, String expectedOutput) {\n+        assertEquals(expectedOutput, ReverseString.reverseStringUsingRecursion(input));\n+    }\n }",
+    "additions": 9,
+    "deletions": 0,
+    "changes": 9,
+    "language": "java",
+    "imports": [
+      "import static org.junit.jupiter.api.Assertions.assertEquals;",
+      "import static org.junit.jupiter.api.Assertions.assertThrows;",
+      "import java.util.stream.Stream;",
+      "import org.junit.jupiter.api.Test;",
+      "import org.junit.jupiter.params.ParameterizedTest;",
+      "import org.junit.jupiter.params.provider.Arguments;",
+      "import org.junit.jupiter.params.provider.CsvSource;",
+      "import org.junit.jupiter.params.provider.MethodSource;"
+    ],
+    "full_content": "package com.thealgorithms.strings;\n\nimport static org.junit.jupiter.api.Assertions.assertEquals;\nimport static org.junit.jupiter.api.Assertions.assertThrows;\n\nimport java.util.stream.Stream;\nimport org.junit.jupiter.api.Test;\nimport org.junit.jupiter.params.ParameterizedTest;\nimport org.junit.jupiter.params.provider.Arguments;\nimport org.junit.jupiter.params.provider.CsvSource;\nimport org.junit.jupiter.params.provider.MethodSource;\n\npublic class ReverseStringTest {\n\n    private static Stream<Arguments> testCases() {\n        return Stream.of(Arguments.of(\"Hello World\", \"dlroW olleH\"), Arguments.of(\"helloworld\", \"dlrowolleh\"), Arguments.of(\"123456789\", \"987654321\"), Arguments.of(\"\", \"\"), Arguments.of(\"A\", \"A\"), Arguments.of(\"ab\", \"ba\"),\n            Arguments.of(\"  leading and trailing spaces  \", \"  secaps gniliart dna gnidael  \"), Arguments.of(\"!@#$%^&*()\", \")(*&^%$#@!\"), Arguments.of(\"MixOf123AndText!\", \"!txeTdnA321fOxiM\"));\n    }\n\n    @ParameterizedTest\n    @MethodSource(\"testCases\")\n    public void testReverseString(String input, String expectedOutput) {\n        assertEquals(expectedOutput, ReverseString.reverse(input));\n    }\n\n    @ParameterizedTest\n    @MethodSource(\"testCases\")\n    public void testReverseString2(String input, String expectedOutput) {\n        assertEquals(expectedOutput, ReverseString.reverse2(input));\n    }\n\n    @ParameterizedTest\n    @MethodSource(\"testCases\")\n    public void testReverseString3(String input, String expectedOutput) {\n        assertEquals(expectedOutput, ReverseString.reverse3(input));\n    }\n\n    @ParameterizedTest\n    @MethodSource(\"testCases\")\n    public void testReverseStringUsingStack(String input, String expectedOutput) {\n        assertEquals(expectedOutput, ReverseString.reverseStringUsingStack(input));\n    }\n\n    @Test\n    public void testReverseStringUsingStackWithNullInput() {\n        assertThrows(IllegalArgumentException.class, () -> ReverseString.reverseStringUsingStack(null));\n    }\n\n    @ParameterizedTest\n    @CsvSou",
+    "raw_url": "https://github.com/TheAlgorithms/Java/raw/511daff5277cbce4830297dacd5226dea4c39629/src%2Ftest%2Fjava%2Fcom%2Fthealgorithms%2Fstrings%2FReverseStringTest.java",
+    "is_test_file": true
+  }
+}

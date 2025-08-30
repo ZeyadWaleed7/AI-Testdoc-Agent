@@ -12,7 +12,7 @@ class LanguageDetector:
         'javascript': ['.js', '.jsx', '.mjs', '.cjs'],
         'typescript': ['.ts', '.tsx'],
         'java': ['.java'],
-        'cpp': ['.cpp', '.cc', '.cxx', '.hpp', '.hxx', '.h'],
+        'cpp': ['.cpp', '.cc', '.cxx', '.hpp', '.hxx', '.h', '.cc'],
         'c': ['.c', '.h'],
         'csharp': ['.cs'],
         'go': ['.go'],
@@ -98,7 +98,10 @@ class LanguageDetector:
         ],
         'go': [
             r'^\s*func\s+(\w+)\s*\(',
+            r'^\s*func\s*\(\s*\w+\s+\w+\s*\)\s*(\w+)\s*\(',
+            r'^\s*func\s*\(\s*\w+\s+\w+\s*\)\s*(\w+)\s*\([^)]*\)\s*[^{]*{',
             r'^\s*type\s+(\w+)\s+',
+            r'^\s*func\s+Test(\w+)\s*\(',
         ],
         'rust': [
             r'^\s*(?:pub\s+)?(?:async\s+)?fn\s+(\w+)\s*\(',
@@ -250,10 +253,166 @@ class LanguageDetector:
         return cls.TEST_FRAMEWORKS.get(language.lower(), [])
     
     @classmethod
-    def get_file_extension_for_language(cls, language: str) -> str:
+    def get_file_extension_for_language(cls, language: str, file_path: str = None) -> str:
         """Get the primary file extension for a language."""
+        # If we have a file path, try to preserve the original extension for special cases
+        if file_path and '.' in file_path:
+            original_ext = '.' + file_path.lower().split('.')[-1]
+            # Check if this is a special extension that should be preserved
+            special_extensions = ['.tsx', '.jsx', '.h', '.hpp', '.hxx', '.cc', '.cxx']
+            if original_ext in special_extensions:
+                return original_ext
+        
+        # First try to get extension from language name
         extensions = cls.LANGUAGE_EXTENSIONS.get(language.lower(), [])
-        return extensions[0] if extensions else '.txt'
+        if extensions:
+            return extensions[0]
+        
+        # If language is actually a file extension, try to map it to a language
+        if language.startswith('.'):
+            language = language[1:]  # Remove the dot
+        
+        # Map common extensions to languages
+        extension_to_language = {
+            'py': 'python',
+            'js': 'javascript',
+            'ts': 'typescript',
+            'tsx': 'typescript',  # Add tsx support
+            'jsx': 'javascript',  # Add jsx support
+            'java': 'java',
+            'cpp': 'cpp',
+            'cc': 'cpp',  # Add cc support
+            'cxx': 'cpp',  # Add cxx support
+            'hpp': 'cpp',  # Add hpp support
+            'hxx': 'cpp',  # Add hxx support
+            'c': 'c',
+            'h': 'cpp',  # Add header file support
+            'cs': 'csharp',
+            'go': 'go',
+            'rs': 'rust',
+            'php': 'php',
+            'rb': 'ruby',
+            'swift': 'swift',
+            'kt': 'kotlin',
+            'scala': 'scala',
+            'dart': 'dart',
+            'r': 'r',
+            'm': 'matlab',
+            'pl': 'perl',
+            'sh': 'bash',
+            'ps1': 'powershell',
+            'sql': 'sql',
+            'html': 'html',
+            'css': 'css',
+            'yml': 'yaml',
+            'yaml': 'yaml',
+            'json': 'json',
+            'xml': 'xml',
+            'md': 'markdown',
+            'markdown': 'markdown',
+        }
+        
+        # Try to get the language from the extension
+        if language in extension_to_language:
+            mapped_language = extension_to_language[language]
+            extensions = cls.LANGUAGE_EXTENSIONS.get(mapped_language, [])
+            if extensions:
+                # For special cases like tsx, jsx, h, cc, cxx, hpp, hxx return the original extension
+                if language in ['tsx', 'jsx', 'h', 'cc', 'cxx', 'hpp', 'hxx']:
+                    return f'.{language}'
+                return extensions[0]
+        
+        # Default fallback - but try to be smarter about it
+        if language.lower() in ['cpp', 'c++']:
+            return '.cpp'
+        elif language.lower() in ['c']:
+            return '.c'
+        elif language.lower() in ['java']:
+            return '.java'
+        elif language.lower() in ['go']:
+            return '.go'
+        elif language.lower() in ['python', 'py']:
+            return '.py'
+        elif language.lower() in ['javascript', 'js']:
+            return '.js'
+        elif language.lower() in ['typescript', 'ts']:
+            return '.ts'
+        
+        return '.txt'
+    
+    @classmethod
+    def get_language_from_extension(cls, file_path: str) -> str:
+        """Get language name from file extension."""
+        if not file_path or '.' not in file_path:
+            return 'unknown'
+        
+        ext = file_path.lower().split('.')[-1]
+        
+        # Map extensions to language names
+        extension_to_language = {
+            'py': 'python',
+            'pyw': 'python',
+            'pyx': 'python',
+            'pyi': 'python',
+            'js': 'javascript',
+            'jsx': 'javascript',
+            'mjs': 'javascript',
+            'cjs': 'javascript',
+            'ts': 'typescript',
+            'tsx': 'typescript',
+            'java': 'java',
+            'cpp': 'cpp',
+            'cc': 'cpp',
+            'cxx': 'cpp',
+            'hpp': 'cpp',
+            'hxx': 'cpp',
+            'h': 'cpp',
+            'c': 'c',
+            'cs': 'csharp',
+            'go': 'go',
+            'rs': 'rust',
+            'php': 'php',
+            'rb': 'ruby',
+            'swift': 'swift',
+            'kt': 'kotlin',
+            'kts': 'kotlin',
+            'scala': 'scala',
+            'dart': 'dart',
+            'r': 'r',
+            'R': 'r',
+            'm': 'matlab',
+            'pl': 'perl',
+            'pm': 'perl',
+            'sh': 'bash',
+            'bash': 'bash',
+            'ps1': 'powershell',
+            'sql': 'sql',
+            'html': 'html',
+            'htm': 'html',
+            'css': 'css',
+            'scss': 'css',
+            'sass': 'css',
+            'less': 'css',
+            'yml': 'yaml',
+            'yaml': 'yaml',
+            'json': 'json',
+            'xml': 'xml',
+            'md': 'markdown',
+            'markdown': 'markdown',
+            'dockerfile': 'dockerfile',
+            'mk': 'makefile',
+            'cmake': 'cmake',
+            'gradle': 'gradle',
+            'kts': 'gradle',
+            'xml': 'maven',
+            'toml': 'cargo',
+            'mod': 'go_mod',
+            'txt': 'requirements',
+            'cfg': 'requirements',
+            'ini': 'requirements',
+        }
+        
+        return extension_to_language.get(ext, 'unknown')
     
     @classmethod
     def is_supported_language(cls, language: str) -> bool:

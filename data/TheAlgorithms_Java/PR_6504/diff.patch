@@ -1,0 +1,140 @@
+From 47e9a8bbdde904ffd3c0b1fca266ddb562ad0de1 Mon Sep 17 00:00:00 2001
+From: ai-nihar <niharkakani@gmail.com>
+Date: Tue, 26 Aug 2025 19:26:39 +0530
+Subject: [PATCH 1/2] Migrate recursive reverse string method and tests to
+ ReverseString
+
+- Moved recursive reverse method from ReverseStringRecursive.java to ReverseString.java
+- Moved tests from ReverseStringRecursiveTest.java to ReverseStringTest.java
+- Deleted old ReverseStringRecursive files
+---
+ .../thealgorithms/strings/ReverseString.java  | 13 ++++++++++++
+ .../strings/ReverseStringRecursive.java       | 21 -------------------
+ .../strings/ReverseStringRecursiveTest.java   | 16 --------------
+ .../strings/ReverseStringTest.java            |  8 +++++++
+ 4 files changed, 21 insertions(+), 37 deletions(-)
+ delete mode 100644 src/main/java/com/thealgorithms/strings/ReverseStringRecursive.java
+ delete mode 100644 src/test/java/com/thealgorithms/strings/ReverseStringRecursiveTest.java
+
+diff --git a/src/main/java/com/thealgorithms/strings/ReverseString.java b/src/main/java/com/thealgorithms/strings/ReverseString.java
+index 996aa68bb307..7b918ebe1a59 100644
+--- a/src/main/java/com/thealgorithms/strings/ReverseString.java
++++ b/src/main/java/com/thealgorithms/strings/ReverseString.java
+@@ -86,4 +86,17 @@ public static String reverseStringUsingStack(String str) {
+         }
+         return reversedString.toString();
+     }
++
++    /**
++     * Reverse the String using Recursion
++     * @param str string to be reversed
++     * @return reversed string
++     */
++    public static String reverseStringUsingRecursion(String str) {
++        if (str.isEmpty()) {
++            return str;
++        } else {
++            return reverseStringUsingRecursion(str.substring(1)) + str.charAt(0);
++        }
++    }
+ }
+diff --git a/src/main/java/com/thealgorithms/strings/ReverseStringRecursive.java b/src/main/java/com/thealgorithms/strings/ReverseStringRecursive.java
+deleted file mode 100644
+index 817b0a8ccd09..000000000000
+--- a/src/main/java/com/thealgorithms/strings/ReverseStringRecursive.java
++++ /dev/null
+@@ -1,21 +0,0 @@
+-package com.thealgorithms.strings;
+-
+-/**
+- * Reverse String using Recursion
+- */
+-public final class ReverseStringRecursive {
+-    private ReverseStringRecursive() {
+-    }
+-
+-    /**
+-     * @param str string to be reversed
+-     * @return reversed string
+-     */
+-    public static String reverse(String str) {
+-        if (str.isEmpty()) {
+-            return str;
+-        } else {
+-            return reverse(str.substring(1)) + str.charAt(0);
+-        }
+-    }
+-}
+diff --git a/src/test/java/com/thealgorithms/strings/ReverseStringRecursiveTest.java b/src/test/java/com/thealgorithms/strings/ReverseStringRecursiveTest.java
+deleted file mode 100644
+index 19daa61f48ca..000000000000
+--- a/src/test/java/com/thealgorithms/strings/ReverseStringRecursiveTest.java
++++ /dev/null
+@@ -1,16 +0,0 @@
+-package com.thealgorithms.strings;
+-
+-import static org.junit.jupiter.api.Assertions.assertEquals;
+-
+-import org.junit.jupiter.params.ParameterizedTest;
+-import org.junit.jupiter.params.provider.CsvSource;
+-
+-public class ReverseStringRecursiveTest {
+-    @ParameterizedTest
+-    @CsvSource({"'Hello World', 'dlroW olleH'", "'helloworld', 'dlrowolleh'", "'123456789', '987654321'", "'', ''", "'A', 'A'", "'!123 ABC xyz!', '!zyx CBA 321!'", "'Abc 123 Xyz', 'zyX 321 cbA'", "'12.34,56;78:90', '09:87;65,43.21'", "'abcdEFGHiJKL', 'LKJiHGFEdcba'",
+-        "'MixOf123AndText!', '!txeTdnA321fOxiM'"})
+-    public void
+-    testReverseString(String input, String expectedOutput) {
+-        assertEquals(expectedOutput, ReverseStringRecursive.reverse(input));
+-    }
+-}
+diff --git a/src/test/java/com/thealgorithms/strings/ReverseStringTest.java b/src/test/java/com/thealgorithms/strings/ReverseStringTest.java
+index 476765b00dfc..88c37c37520f 100644
+--- a/src/test/java/com/thealgorithms/strings/ReverseStringTest.java
++++ b/src/test/java/com/thealgorithms/strings/ReverseStringTest.java
+@@ -7,6 +7,7 @@
+ import org.junit.jupiter.api.Test;
+ import org.junit.jupiter.params.ParameterizedTest;
+ import org.junit.jupiter.params.provider.Arguments;
++import org.junit.jupiter.params.provider.CsvSource;
+ import org.junit.jupiter.params.provider.MethodSource;
+ 
+ public class ReverseStringTest {
+@@ -44,4 +45,11 @@ public void testReverseStringUsingStack(String input, String expectedOutput) {
+     public void testReverseStringUsingStackWithNullInput() {
+         assertThrows(IllegalArgumentException.class, () -> ReverseString.reverseStringUsingStack(null));
+     }
++
++    @ParameterizedTest
++    @CsvSource({"'Hello World', 'dlroW olleH'", "'helloworld', 'dlrowolleh'", "'123456789', '987654321'", "'', ''", "'A', 'A'", "'!123 ABC xyz!', '!zyx CBA 321!'", "'Abc 123 Xyz', 'zyX 321 cbA'", "'12.34,56;78:90', '09:87;65,43.21'", "'abcdEFGHiJKL', 'LKJiHGFEdcba'",
++            "'MixOf123AndText!', '!txeTdnA321fOxiM'"})
++    public void testReverseStringUsingRecursion(String input, String expectedOutput) {
++        assertEquals(expectedOutput, ReverseString.reverseStringUsingRecursion(input));
++    }
+ }
+
+From 511daff5277cbce4830297dacd5226dea4c39629 Mon Sep 17 00:00:00 2001
+From: ai-nihar <niharkakani@gmail.com>
+Date: Wed, 27 Aug 2025 11:40:40 +0530
+Subject: [PATCH 2/2] Fix formatting for ReverseStringTest.java as per
+ clang-format linter
+
+---
+ .../java/com/thealgorithms/strings/ReverseStringTest.java    | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/src/test/java/com/thealgorithms/strings/ReverseStringTest.java b/src/test/java/com/thealgorithms/strings/ReverseStringTest.java
+index 88c37c37520f..c50f92c1a008 100644
+--- a/src/test/java/com/thealgorithms/strings/ReverseStringTest.java
++++ b/src/test/java/com/thealgorithms/strings/ReverseStringTest.java
+@@ -48,8 +48,9 @@ public void testReverseStringUsingStackWithNullInput() {
+ 
+     @ParameterizedTest
+     @CsvSource({"'Hello World', 'dlroW olleH'", "'helloworld', 'dlrowolleh'", "'123456789', '987654321'", "'', ''", "'A', 'A'", "'!123 ABC xyz!', '!zyx CBA 321!'", "'Abc 123 Xyz', 'zyX 321 cbA'", "'12.34,56;78:90', '09:87;65,43.21'", "'abcdEFGHiJKL', 'LKJiHGFEdcba'",
+-            "'MixOf123AndText!', '!txeTdnA321fOxiM'"})
+-    public void testReverseStringUsingRecursion(String input, String expectedOutput) {
++        "'MixOf123AndText!', '!txeTdnA321fOxiM'"})
++    public void
++    testReverseStringUsingRecursion(String input, String expectedOutput) {
+         assertEquals(expectedOutput, ReverseString.reverseStringUsingRecursion(input));
+     }
+ }

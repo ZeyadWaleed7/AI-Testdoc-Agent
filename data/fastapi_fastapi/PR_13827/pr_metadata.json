@@ -1,0 +1,6 @@
+{
+  "title": "\ud83d\udc1b Fix support for unions when using `Form`",
+  "description": null,
+  "base_branch": "master",
+  "head_branch": "fix/union-forms"
+}

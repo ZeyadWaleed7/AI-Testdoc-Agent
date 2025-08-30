@@ -1,0 +1,17 @@
+import pytest
+from ibm_granite_granite_3_3_2B_Instruct import my_function
+
+def test_normal_case():
+    assert my_function(1, 2) == 3
+
+def test_edge_case():
+    assert my_function(0, 0) == 0
+    assert my_function(-1, -1) == -2
+
+def test_error_case():
+    with pytest.raises(TypeError):
+        my_function(1, '2')
+    with pytest.raises(TypeError):
+        my_function('1', 2)
+    with pytest.raises(TypeError):
+        my_function('1.5', '2.5')

@@ -146,6 +146,76 @@ def validate_diff_file(diff_file):
     except Exception as e:
         return False, f"Error reading file: {e}"
 
+def process_pr(pr_data_dir: str, provider: str, model: str, prompt_strategy: str = "naive", generate_docs: bool = True):
+    """Process a specific PR using enhanced context"""
+    print(f"Processing PR from: {pr_data_dir}")
+    
+    # Check if enhanced context is available
+    enhanced_patches_path = os.path.join(pr_data_dir, "enhanced_patches.json")
+    if not os.path.exists(enhanced_patches_path):
+        print(f"Error: No enhanced context found in {pr_data_dir}")
+        return
+    
+    # Initialize the agent
+    agent = AIAgent(provider=provider, model_name=model)
+    
+    # Process with enhanced context using the correct method
+    try:
+        # Use the new method that saves files to deepseek_coder/{strategy}/
+        agent._process_enhanced_context(pr_data_dir, prompt_strategy)
+        
+        print(f"Processing completed!")
+        print(f"Enhanced context used: True")
+        print(f"PR Title: {agent.enhanced_context.get_pr_title() if hasattr(agent, 'enhanced_context') else 'Unknown'}")
+        
+        # Check what files were generated
+        strategy_dir = os.path.join(pr_data_dir, "deepseek_coder", prompt_strategy)
+        if os.path.exists(strategy_dir):
+            generated_files = os.listdir(strategy_dir)
+            print(f"Generated {len(generated_files)} test files in {strategy_dir}:")
+            for file in generated_files:
+                print(f"  - {file}")
+        else:
+            print(f"No test files generated in {strategy_dir}")
+            
+    except Exception as e:
+        print(f"Error processing PR: {e}")
+        import traceback
+        traceback.print_exc()
+
+def compare_strategies(pr_data_dir: str, provider: str, model: str):
+    """Compare all prompt strategies using enhanced context"""
+    print(f"Comparing all strategies for PR: {pr_data_dir}")
+    
+    strategies = ["naive", "diff-aware", "few-shot", "cot"]
+    
+    for strategy in strategies:
+        print(f"\n{'='*50}")
+        print(f"Testing strategy: {strategy}")
+        print(f"{'='*50}")
+        
+        strategy_dir = f"generated_{strategy}"
+        os.makedirs(strategy_dir, exist_ok=True)
+        
+        try:
+            process_pr(pr_data_dir, provider, model, strategy, generate_docs=True)
+            
+            # Move generated files to strategy-specific directory
+            if os.path.exists("generated"):
+                import shutil
+                for item in os.listdir("generated"):
+                    src = os.path.join("generated", item)
+                    dst = os.path.join(strategy_dir, item)
+                    if os.path.isfile(src):
+                        shutil.move(src, dst)
+                        
+        except Exception as e:
+            print(f"Error with strategy {strategy}: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    print(f"\nStrategy comparison completed. Check the generated_* directories for results.")
+
 def process_diff_files(agent: AIAgent, strategies: list[str] = None, compare_strategies: bool = False, 
                       selected_prs=None, repo_filter=None, pr_filter=None, limit=None, interactive=False,
                       skip_on_error=True):
@@ -309,9 +379,9 @@ def main():
     parser = argparse.ArgumentParser(description="AI Pair Programming Agent")
     parser.add_argument("--extract-only", action="store_true", help="Only extract PR data")
     parser.add_argument("--process-only", action="store_true", help="Only process existing diff files")
-    parser.add_argument("--prompt-strategy", default="diff-aware", 
-                       choices=["naive", "diff-aware", "few-shot", "cot", "tdd"],
-                       help="Prompt strategy to use")
+    parser.add_argument("--prompt-strategy", default="naive",
+                       choices=["naive", "diff-aware", "few-shot", "cot"],
+                       help="Prompt strategy to use (all strategies now use enhanced context processing)")
     parser.add_argument("--compare-strategies", action="store_true", 
                        help="Compare all prompt strategies")
     parser.add_argument("--model", default="h2oai/h2ogpt-16k-codellama-13b-python",
@@ -333,12 +403,17 @@ def main():
                        help="Interactive PR selection")
     parser.add_argument("--repo-filter", 
                        help="Filter PRs by repository name (case-insensitive partial match)")
-    parser.add_argument("--pr-filter",
-                       help="Process specific PR numbers (comma-separated)")
+    parser.add_argument("--pr-filter", type=str, help="Filter PRs by number or name")
     parser.add_argument("--limit", type=int,
                        help="Limit number of PRs to process")
     parser.add_argument("--continue-on-error", action="store_true",
                        help="Continue processing other strategies even if one fails")
+    
+    # Enhanced context options
+    parser.add_argument("--pr-data-dir", type=str, help="Process specific PR data directory")
+    
+    # Enhanced context processing
+    parser.add_argument("--enhanced-context", action="store_true", help="Use enhanced context for better test generation")
     
     args = parser.parse_args()
     
@@ -347,6 +422,14 @@ def main():
     print("🤖 AI Pair Programming Agent for Automated Test Writing and Documentation")
     print("=" * 70)
     
+    # Handle enhanced context processing
+    if args.pr_data_dir:
+        if args.compare_strategies:
+            compare_strategies(args.pr_data_dir, args.provider, args.model)
+        else:
+            process_pr(args.pr_data_dir, args.provider, args.model, args.prompt_strategy, args.enhanced_context)
+        return
+
     # Handle list-prs command
     if args.list_prs:
         available_prs = list_available_prs()

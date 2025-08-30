@@ -20,12 +20,85 @@ PATCH_HEADERS = {
 }
 
 REPOS = [
-    {"owner": "", "repo": "", "prs": []},
+    {"owner": "TheAlgorithms", "repo": "Java", "prs": [6504]},
 ]
 
 BASE_OUTPUT_PATH = "data"
 TEST_EXTENSIONS = [".py", ".cpp", ".c", ".js", ".ts", ".java", ".rb",".go"]
 TEST_KEYWORDS = ["test", "spec", "Test", "_test"]
+
+def get_language_from_extension(filename):
+    """Map file extensions to proper language names"""
+    if not filename or '.' not in filename:
+        return 'unknown'
+    
+    ext = filename.lower().split('.')[-1]
+    
+    # Map extensions to language names
+    extension_to_language = {
+        'py': 'python',
+        'pyw': 'python',
+        'pyx': 'python',
+        'pyi': 'python',
+        'js': 'javascript',
+        'jsx': 'javascript',
+        'mjs': 'javascript',
+        'cjs': 'javascript',
+        'ts': 'typescript',
+        'tsx': 'typescript',
+        'java': 'java',
+        'cpp': 'cpp',
+        'cc': 'cpp',
+        'cxx': 'cpp',
+        'hpp': 'cpp',
+        'hxx': 'cpp',
+        'h': 'c',
+        'c': 'c',
+        'cs': 'csharp',
+        'go': 'go',
+        'rs': 'rust',
+        'php': 'php',
+        'rb': 'ruby',
+        'swift': 'swift',
+        'kt': 'kotlin',
+        'kts': 'kotlin',
+        'scala': 'scala',
+        'dart': 'dart',
+        'r': 'r',
+        'R': 'r',
+        'm': 'matlab',
+        'pl': 'perl',
+        'pm': 'perl',
+        'sh': 'bash',
+        'bash': 'bash',
+        'ps1': 'powershell',
+        'sql': 'sql',
+        'html': 'html',
+        'htm': 'html',
+        'css': 'css',
+        'scss': 'css',
+        'sass': 'css',
+        'less': 'css',
+        'yml': 'yaml',
+        'yaml': 'yaml',
+        'json': 'json',
+        'xml': 'xml',
+        'md': 'markdown',
+        'markdown': 'markdown',
+        'dockerfile': 'dockerfile',
+        'mk': 'makefile',
+        'cmake': 'cmake',
+        'gradle': 'gradle',
+        'kts': 'gradle',
+        'xml': 'maven',
+        'toml': 'cargo',
+        'mod': 'go_mod',
+        'txt': 'requirements',
+        'cfg': 'requirements',
+        'ini': 'requirements',
+    }
+    
+    return extension_to_language.get(ext, 'unknown')
 
 def get_file_content(owner, repo, path, ref="main"):
     """Get full file content for context"""
@@ -42,12 +115,22 @@ def extract_imports_and_deps(file_content, language):
     lines = file_content.split('\n')
     imports = []
     
-    if language in ['py']:
+    if language in ['python']:
         imports = [line.strip() for line in lines if line.strip().startswith(('import ', 'from '))]
     elif language in ['cpp', 'c']:
         imports = [line.strip() for line in lines if line.strip().startswith('#include')]
     elif language in ['java']:
         imports = [line.strip() for line in lines if line.strip().startswith('import ')]
+    elif language in ['javascript', 'typescript']:
+        imports = [line.strip() for line in lines if line.strip().startswith(('import ', 'export '))]
+    elif language in ['go']:
+        imports = [line.strip() for line in lines if line.strip().startswith('import ')]
+    elif language in ['rust']:
+        imports = [line.strip() for line in lines if line.strip().startswith('use ')]
+    elif language in ['php']:
+        imports = [line.strip() for line in lines if line.strip().startswith(('use ', 'require ', 'include '))]
+    elif language in ['ruby']:
+        imports = [line.strip() for line in lines if line.strip().startswith(('require ', 'load '))]
     
     return imports[:10]  # Limit to first 10 imports
 
@@ -63,8 +146,8 @@ def save_test_file(filename, raw_url, test_path):
         test_content = requests.get(raw_url, headers=HEADERS).text
         file_name_only = os.path.basename(filename)
         
-        # Get file extension for language-based organization
-        lang = filename.split('.')[-1] if '.' in filename else 'unknown'
+        # Get language for language-based organization
+        lang = get_language_from_extension(filename)
         lang_path = os.path.join(test_path, lang)
         os.makedirs(lang_path, exist_ok=True)
         
@@ -131,7 +214,7 @@ def extract_data():
                     continue
 
                 filename = file['filename']
-                language = filename.split('.')[-1] if '.' in filename else ''
+                language = get_language_from_extension(filename)
                 
                 # Get full file content for context
                 full_content = get_file_content(owner, repo, filename, pr_data.get("head", {}).get("sha"))

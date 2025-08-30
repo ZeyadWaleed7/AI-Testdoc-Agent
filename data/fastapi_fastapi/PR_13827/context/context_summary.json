@@ -1,0 +1,25 @@
+{
+  "pr_title": "\ud83d\udc1b Fix support for unions when using `Form`",
+  "total_files_changed": 2,
+  "languages": [
+    "py"
+  ],
+  "main_changes": [
+    {
+      "file": "fastapi/dependencies/utils.py",
+      "status": "modified",
+      "changes": 27,
+      "language": "py",
+      "is_test_file": false
+    },
+    {
+      "file": "tests/test_union_forms.py",
+      "status": "added",
+      "changes": 156,
+      "language": "py",
+      "is_test_file": true
+    }
+  ],
+  "existing_test_files": 1,
+  "test_files_saved": 1
+}

@@ -1,0 +1,96 @@
+diff --git a/src/main/java/com/thealgorithms/strings/ReverseString.java b/src/main/java/com/thealgorithms/strings/ReverseString.java
+index 996aa68bb307..7b918ebe1a59 100644
+--- a/src/main/java/com/thealgorithms/strings/ReverseString.java
++++ b/src/main/java/com/thealgorithms/strings/ReverseString.java
+@@ -86,4 +86,17 @@ public static String reverseStringUsingStack(String str) {
+         }
+         return reversedString.toString();
+     }
++
++    /**
++     * Reverse the String using Recursion
++     * @param str string to be reversed
++     * @return reversed string
++     */
++    public static String reverseStringUsingRecursion(String str) {
++        if (str.isEmpty()) {
++            return str;
++        } else {
++            return reverseStringUsingRecursion(str.substring(1)) + str.charAt(0);
++        }
++    }
+ }
+diff --git a/src/main/java/com/thealgorithms/strings/ReverseStringRecursive.java b/src/main/java/com/thealgorithms/strings/ReverseStringRecursive.java
+deleted file mode 100644
+index 817b0a8ccd09..000000000000
+--- a/src/main/java/com/thealgorithms/strings/ReverseStringRecursive.java
++++ /dev/null
+@@ -1,21 +0,0 @@
+-package com.thealgorithms.strings;
+-
+-/**
+- * Reverse String using Recursion
+- */
+-public final class ReverseStringRecursive {
+-    private ReverseStringRecursive() {
+-    }
+-
+-    /**
+-     * @param str string to be reversed
+-     * @return reversed string
+-     */
+-    public static String reverse(String str) {
+-        if (str.isEmpty()) {
+-            return str;
+-        } else {
+-            return reverse(str.substring(1)) + str.charAt(0);
+-        }
+-    }
+-}
+diff --git a/src/test/java/com/thealgorithms/strings/ReverseStringRecursiveTest.java b/src/test/java/com/thealgorithms/strings/ReverseStringRecursiveTest.java
+deleted file mode 100644
+index 19daa61f48ca..000000000000
+--- a/src/test/java/com/thealgorithms/strings/ReverseStringRecursiveTest.java
++++ /dev/null
+@@ -1,16 +0,0 @@
+-package com.thealgorithms.strings;
+-
+-import static org.junit.jupiter.api.Assertions.assertEquals;
+-
+-import org.junit.jupiter.params.ParameterizedTest;
+-import org.junit.jupiter.params.provider.CsvSource;
+-
+-public class ReverseStringRecursiveTest {
+-    @ParameterizedTest
+-    @CsvSource({"'Hello World', 'dlroW olleH'", "'helloworld', 'dlrowolleh'", "'123456789', '987654321'", "'', ''", "'A', 'A'", "'!123 ABC xyz!', '!zyx CBA 321!'", "'Abc 123 Xyz', 'zyX 321 cbA'", "'12.34,56;78:90', '09:87;65,43.21'", "'abcdEFGHiJKL', 'LKJiHGFEdcba'",
+-        "'MixOf123AndText!', '!txeTdnA321fOxiM'"})
+-    public void
+-    testReverseString(String input, String expectedOutput) {
+-        assertEquals(expectedOutput, ReverseStringRecursive.reverse(input));
+-    }
+-}
+diff --git a/src/test/java/com/thealgorithms/strings/ReverseStringTest.java b/src/test/java/com/thealgorithms/strings/ReverseStringTest.java
+index 476765b00dfc..c50f92c1a008 100644
+--- a/src/test/java/com/thealgorithms/strings/ReverseStringTest.java
++++ b/src/test/java/com/thealgorithms/strings/ReverseStringTest.java
+@@ -7,6 +7,7 @@
+ import org.junit.jupiter.api.Test;
+ import org.junit.jupiter.params.ParameterizedTest;
+ import org.junit.jupiter.params.provider.Arguments;
++import org.junit.jupiter.params.provider.CsvSource;
+ import org.junit.jupiter.params.provider.MethodSource;
+ 
+ public class ReverseStringTest {
+@@ -44,4 +45,12 @@ public void testReverseStringUsingStack(String input, String expectedOutput) {
+     public void testReverseStringUsingStackWithNullInput() {
+         assertThrows(IllegalArgumentException.class, () -> ReverseString.reverseStringUsingStack(null));
+     }
++
++    @ParameterizedTest
++    @CsvSource({"'Hello World', 'dlroW olleH'", "'helloworld', 'dlrowolleh'", "'123456789', '987654321'", "'', ''", "'A', 'A'", "'!123 ABC xyz!', '!zyx CBA 321!'", "'Abc 123 Xyz', 'zyX 321 cbA'", "'12.34,56;78:90', '09:87;65,43.21'", "'abcdEFGHiJKL', 'LKJiHGFEdcba'",
++        "'MixOf123AndText!', '!txeTdnA321fOxiM'"})
++    public void
++    testReverseStringUsingRecursion(String input, String expectedOutput) {
++        assertEquals(expectedOutput, ReverseString.reverseStringUsingRecursion(input));
++    }
+ }

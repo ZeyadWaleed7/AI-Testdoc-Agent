@@ -1,0 +1,39 @@
+{
+  "pr_title": "Migrate recursive reverse string method and tests to ReverseString",
+  "total_files_changed": 4,
+  "languages": [
+    "java"
+  ],
+  "main_changes": [
+    {
+      "file": "src/main/java/com/thealgorithms/strings/ReverseString.java",
+      "status": "modified",
+      "changes": 13,
+      "language": "java",
+      "is_test_file": false
+    },
+    {
+      "file": "src/main/java/com/thealgorithms/strings/ReverseStringRecursive.java",
+      "status": "removed",
+      "changes": 21,
+      "language": "java",
+      "is_test_file": false
+    },
+    {
+      "file": "src/test/java/com/thealgorithms/strings/ReverseStringRecursiveTest.java",
+      "status": "removed",
+      "changes": 16,
+      "language": "java",
+      "is_test_file": true
+    },
+    {
+      "file": "src/test/java/com/thealgorithms/strings/ReverseStringTest.java",
+      "status": "modified",
+      "changes": 9,
+      "language": "java",
+      "is_test_file": true
+    }
+  ],
+  "existing_test_files": 1,
+  "test_files_saved": 2
+}
