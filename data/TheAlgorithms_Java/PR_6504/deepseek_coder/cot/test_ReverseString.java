@@ -1,32 +1,44 @@
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-
 import java.util.Stack;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ReverseStringTest {
 
-    @Test
-    void testReverseString_normalCase(MockedStatic<String> mockedStatic) {
-        String input = "hello";
-        String expectedOutput = "olleh";
-        mockedStatic.when(ReverseString.reverseString(input)).thenReturn(expectedOutput);
-        assertEquals(expectedOutput, ReverseString.reverseString(input));
+    private ReverseString reverseString;
+
+    @BeforeEach
+    void setUp() {
+        reverseString = new ReverseString();
     }
 
     @Test
-    void testReverseString_edgeCase(MockedStatic<String> mockedStatic) {
+    void testReverseString_normalCases() {
+        String input = "abcde";
+        String expectedOutput = "edcba";
+        assertEquals(expectedOutput, reverseString.reverseString(input));
+    }
+
+    @Test
+    void testReverseString_edgeCases() {
         String input = "";
         String expectedOutput = "";
-        mockedStatic.when(ReverseString.reverseString(input)).thenReturn(expectedOutput);
-        assertEquals(expectedOutput, ReverseString.reverseString(input));
+        assertEquals(expectedOutput, reverseString.reverseString(input));
+
+        input = "a";
+        expectedOutput = "a";
+        assertEquals(expectedOutput, reverseString.reverseString(input));
     }
 
     @Test
-    void testReverseString_errorCase(MockedStatic<String> mockedStatic) {
-        String input = null;
-        assertThrows(NullPointerException.class, () -> ReverseString.reverseString(input));
+    void testReverseString_errorConditions() {
+        assertThrows(NullPointerException.class, () -> reverseString.reverseString(null));
+    }
+
+    @AfterEach
+    void tearDown() {
+        reverseString = null;
     }
 }

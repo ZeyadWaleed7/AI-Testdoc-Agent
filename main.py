@@ -82,32 +82,52 @@ def select_prs_interactive(available_prs):
             # Handle ranges and individual numbers
             for part in selection.split(','):
                 part = part.strip()
+                if not part:  # Skip empty parts
+                    continue
+                    
                 if '-' in part and part != '-':
                     # Range selection (e.g., "1-5")
-                    start, end = map(int, part.split('-'))
-                    for idx in range(start - 1, min(end, len(available_prs))):
-                        if 0 <= idx < len(available_prs):
-                            selected_prs.append(available_prs[idx])
+                    try:
+                        start, end = map(int, part.split('-'))
+                        if start > end:
+                            start, end = end, start  # Swap if start > end
+                        for idx in range(start - 1, min(end, len(available_prs))):
+                            if 0 <= idx < len(available_prs):
+                                selected_prs.append(available_prs[idx])
+                    except ValueError:
+                        print(f"Invalid range format: {part}. Use format like '1-5'")
+                        continue
                 else:
                     # Individual number
-                    idx = int(part) - 1
-                    if 0 <= idx < len(available_prs):
-                        selected_prs.append(available_prs[idx])
-                    else:
-                        print(f"Invalid selection: {idx + 1} (max: {len(available_prs)})")
-                        break
-            else:
-                # Remove duplicates while preserving order
-                unique_prs = []
-                seen = set()
-                for pr in selected_prs:
-                    if pr['full_name'] not in seen:
-                        unique_prs.append(pr)
-                        seen.add(pr['full_name'])
-                return unique_prs
+                    try:
+                        idx = int(part) - 1
+                        if 0 <= idx < len(available_prs):
+                            selected_prs.append(available_prs[idx])
+                        else:
+                            print(f"Invalid selection: {idx + 1} (max: {len(available_prs)})")
+                            continue
+                    except ValueError:
+                        print(f"Invalid number: {part}")
+                        continue
+            
+            if not selected_prs:
+                print("No valid selections made. Please try again.")
+                continue
                 
-        except ValueError:
-            print("Invalid input. Please use format: 1,3,5 or 1-5 or 'all' or 'q'")
+            # Remove duplicates while preserving order
+            unique_prs = []
+            seen = set()
+            for pr in selected_prs:
+                if pr['full_name'] not in seen:
+                    unique_prs.append(pr)
+                    seen.add(pr['full_name'])
+            
+            print(f"Selected {len(unique_prs)} PRs: {', '.join([pr['full_name'] for pr in unique_prs])}")
+            return unique_prs
+                
+        except Exception as e:
+            print(f"Error processing selection: {e}")
+            print("Please use format: 1,3,5 or 1-5 or 'all' or 'q'")
 
 def filter_prs_by_criteria(available_prs, repo_filter=None, pr_filter=None, limit=None):
     """Filter PRs based on criteria"""
@@ -134,15 +154,28 @@ def validate_diff_file(diff_file):
         return False, "Diff file does not exist"
     
     try:
+        # Try to read as text first
         content = diff_file.read_text(encoding='utf-8')
         if not content.strip():
             return False, "Diff file is empty"
         
+        # Check for binary content
+        if '\x00' in content:
+            return False, "File appears to be binary"
+        
         # Basic validation - should contain diff markers
-        if not any(line.startswith(('diff --git', '@@', '+++', '---')) for line in content.split('\n')):
+        lines = content.split('\n')
+        if not any(line.startswith(('diff --git', '@@', '+++', '---')) for line in lines):
             return False, "File doesn't appear to be a valid diff"
+        
+        # Check for minimum content length
+        if len(content.strip()) < 50:
+            return False, "Diff file seems too short to be valid"
             
         return True, "Valid"
+        
+    except UnicodeDecodeError:
+        return False, "File encoding error - may be binary or corrupted"
     except Exception as e:
         return False, f"Error reading file: {e}"
 

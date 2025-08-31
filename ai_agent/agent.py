@@ -131,7 +131,8 @@ class AIAgent:
                         file_path=file_path,
                         language=language,
                         enhanced_context=enhanced_context,
-                        output_dir=output_dir
+                        output_dir=output_dir,
+                        prompt_strategy=prompt_strategy
                     )
                     
                     if not test_code or not test_code.strip():
@@ -194,7 +195,10 @@ class AIAgent:
                     })
                     
                 except Exception as e:
-                    self.logger.error(f"Error processing function {function_name}: {e}")
+                    self.logger.error(f"Error processing function {function_name} with strategy {prompt_strategy}: {e}")
+                    # Log additional context for debugging
+                    self.logger.error(f"Function: {function_name}, Language: {language}, Strategy: {prompt_strategy}")
+                    self.logger.error(f"File: {file_path}")
                     continue
         
         return results
@@ -785,7 +789,9 @@ GENERATE THE COMPLETE TEST FILE NOW - NO EXCUSES, NO EXPLANATIONS, ONLY COMPLETE
                 return
                 
             pr_data_path = enhanced_context.pr_data_path
-            test_dir = pr_data_path / "deepseek_coder" / strategy
+            # Use the actual model name instead of hardcoded "deepseek_coder"
+            model_name = self.model_name.replace("/", "_").replace("-", "_")
+            test_dir = pr_data_path / model_name / strategy
             
             logging.info(f"MAIN TEST FILE SAVE - Strategy: '{strategy}', File: {file_path}")
             logging.info(f"Creating test directory: {test_dir}")
@@ -823,7 +829,8 @@ GENERATE THE COMPLETE TEST FILE NOW - NO EXCUSES, NO EXPLANATIONS, ONLY COMPLETE
             # Only create directories for valid strategies
             if strategy in ["naive", "few-shot", "cot", "diff-aware"]:
                 # This is the main processing path - save to the correct strategy directory
-                test_dir = pr_data_path / "deepseek_coder" / strategy
+                model_name = self.model_name.replace("/", "_").replace("-", "_")
+                test_dir = pr_data_path / model_name / strategy
                 logging.info(f"Creating main strategy directory: {test_dir}")
                 test_dir.mkdir(parents=True, exist_ok=True)
             else:
@@ -852,7 +859,9 @@ GENERATE THE COMPLETE TEST FILE NOW - NO EXCUSES, NO EXPLANATIONS, ONLY COMPLETE
         """Save documentation file for a test file"""
         try:
             pr_data_path = enhanced_context.pr_data_path
-            doc_dir = pr_data_path / "deepseek_coder" / strategy
+            # Use the actual model name instead of hardcoded "deepseek_coder"
+            model_name = self.model_name.replace("/", "_").replace("-", "_")
+            doc_dir = pr_data_path / model_name / strategy
 
             logging.info(f"DOC FILE SAVE - Strategy: '{strategy}', File: {file_path}")
             logging.info(f"Creating doc directory: {doc_dir}")

@@ -268,14 +268,15 @@ class TestGenerator:
         file_path: str,
         language: str,
         enhanced_context: EnhancedContextLoader,
-        output_dir: str = "generated"
+        output_dir: str = "generated",
+        prompt_strategy: str = "naive"  # Add prompt_strategy parameter
     ) -> str:
         """Generate tests using enhanced context for complete, runnable output"""
         
         try:
-            # Use the enhanced context prompt
-            prompt = self._create_enhanced_context_prompt(
-                function_code, enhanced_context, file_path, language
+            # Use the strategy-specific prompt based on prompt_strategy
+            prompt = self._create_strategy_specific_prompt(
+                function_code, enhanced_context, file_path, language, prompt_strategy
             )
             
             # Generate test using LLM
@@ -293,7 +294,7 @@ class TestGenerator:
             # Validate the generated test
             if not self._validate_generated_test(test_code, language):
                 logging.warning(f"Generated test failed validation, regenerating...")
-                test_code = self._regenerate_if_invalid(test_code, function_code, language, enhanced_context, file_path)
+                test_code = self._regenerate_if_invalid(test_code, function_code, language, enhanced_context, file_path, prompt_strategy)
                 
                 # Final validation
             if not test_code or not test_code.strip():
@@ -313,26 +314,42 @@ class TestGenerator:
             # Fallback to basic generation
             return self._generate_fallback_test(function_code, language)
     
-    def _create_enhanced_context_prompt(
+    def _create_strategy_specific_prompt(
         self,
         function_code: str,
         enhanced_context: EnhancedContextLoader,
         file_path: str,
-        language: str
+        language: str,
+        prompt_strategy: str
     ) -> str:
-        """Create a comprehensive prompt using enhanced context"""
+        """Create a strategy-specific prompt using enhanced context"""
         
         # Get comprehensive context data for the prompt
         context_data = enhanced_context.get_full_context_for_prompt(file_path)
         
-        # Use the enhanced context prompt template
-        from .prompts import PromptTemplates
-        return PromptTemplates.enhanced_context_prompt(
-            function_code=function_code,
-            enhanced_context=context_data,
-            file_path=file_path,
-            language=language
-        )
+        # Use the appropriate strategy-specific prompt template
+        from .prompts import PromptStrategy
+        prompt_strategy_obj = PromptStrategy()
+        
+        # Get the strategy-specific prompt
+        if prompt_strategy == "enhanced-context":
+            # Use the enhanced context prompt for this special case
+            from .prompts import PromptTemplates
+            return PromptTemplates.enhanced_context_prompt(
+                function_code=function_code,
+                enhanced_context=context_data,
+                file_path=file_path,
+                language=language
+            )
+        else:
+            # Use the strategy-specific prompt with enhanced context data
+            return prompt_strategy_obj.get_prompt(
+                strategy=prompt_strategy,
+                function_code=function_code,
+                enhanced_context=context_data,
+                file_path=file_path,
+                language=language
+            )
     
     def _create_stronger_prompt(
         self,
@@ -792,7 +809,7 @@ Generate the complete test file now:"""
         return True
     
     def _regenerate_if_invalid(self, test_code: str, function_code: str, language: str, 
-                               enhanced_context=None, file_path=None) -> str:
+                               enhanced_context=None, file_path=None, prompt_strategy: str = "naive") -> str:
         """Regenerate test if the current one doesn't meet quality standards"""
         if self._validate_generated_test(test_code, language):
             return test_code

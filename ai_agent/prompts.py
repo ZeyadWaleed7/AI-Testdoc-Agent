@@ -677,13 +677,52 @@ class PromptStrategy:
         
         # Handle different parameter requirements for different strategies
         if strategy == "diff-aware":
-            return strategy_func(kwargs.get('function_code', ''), kwargs.get('diff_context', ''), kwargs.get('language', 'python'))
+            # For diff-aware, we need both function_code and diff_context
+            diff_context = kwargs.get('diff_context', '')
+            if not diff_context and 'enhanced_context' in kwargs:
+                # Extract diff context from enhanced context if available
+                enhanced_context = kwargs['enhanced_context']
+                diff_context = enhanced_context.get('diff_patch', '') or enhanced_context.get('file_patch', '')
+            
+            return strategy_func(
+                kwargs.get('function_code', ''), 
+                diff_context, 
+                kwargs.get('language', 'python')
+            )
         elif strategy == "few-shot":
-            return strategy_func(kwargs.get('function_code', ''), kwargs.get('examples', None), kwargs.get('language', 'python'))
-        # All strategies now use enhanced context processing by default
-        # The enhanced_context_prompt is used internally by the agent
+            # For few-shot, we can include examples from enhanced context
+            examples = kwargs.get('examples', None)
+            if not examples and 'enhanced_context' in kwargs:
+                # Extract test patterns from enhanced context if available
+                enhanced_context = kwargs['enhanced_context']
+                test_patterns = enhanced_context.get('test_patterns', [])
+                if test_patterns:
+                    examples = [{"function": "example", "test": pattern} for pattern in test_patterns[:2]]
+            
+            return strategy_func(
+                kwargs.get('function_code', ''), 
+                examples, 
+                kwargs.get('language', 'python')
+            )
         else:
-            return strategy_func(kwargs.get('function_code', ''), kwargs.get('language', 'python'))
+            # For naive and cot strategies, pass enhanced context if available
+            function_code = kwargs.get('function_code', '')
+            language = kwargs.get('language', 'python')
+            
+            # If we have enhanced context, we can enhance the basic prompts
+            if 'enhanced_context' in kwargs:
+                enhanced_context = kwargs['enhanced_context']
+                # Add some context information to make these strategies more informed
+                context_info = f"\n\nContext: {enhanced_context.get('pr_title', '')}"
+                if enhanced_context.get('diff_patch'):
+                    context_info += f"\nChanges: {enhanced_context.get('diff_patch', '')[:200]}..."
+                
+                # Call the basic strategy function
+                base_prompt = strategy_func(function_code, language)
+                # Enhance it with context
+                return base_prompt + context_info
+            
+            return strategy_func(function_code, language)
     
     def get_all_strategies(self) -> List[str]:
         return list(self.strategies.keys())
