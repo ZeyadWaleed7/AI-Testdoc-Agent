@@ -1,6 +1,0 @@
-{
-  "title": "Cleanup of gtest.cc and a couple of unittests",
-  "description": "Changes:\r\n1. Unused parameter was removed from `::testing::internal::GetCurrentOsStackTraceExceptTop`. This code was reworked more than a decade ago aaebfcdc4005afb22b68df61b58edd1ccc002913.\r\n2. In a couple of tests return type was replaced with `const auto&`. It's a little bit more convenient because uncouples the implementation of the tests from the return type of `::GetInstance()`.\r\n\r\n```\r\nmake test\r\nRunning tests...\r\n...\r\n100% tests passed, 0 tests failed out of 63\r\n\r\nTotal Test time (real) =   7.67 sec\r\n```",
-  "base_branch": "main",
-  "head_branch": "venik-clean-up"
-}

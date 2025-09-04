@@ -1,0 +1,872 @@
+From 42d80dffb5fdaf1c5510de61b65cb3badf89ccce Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E6=9C=A8=E8=91=89=20Scarlet?=
+ <93977077+mukjepscarlet@users.noreply.github.com>
+Date: Mon, 11 Aug 2025 23:44:56 +0800
+Subject: [PATCH 1/9] refactor(SSE): move static functions to extensions
+
+---
+ okhttp-sse/api/okhttp-sse.api                 | 14 +++++++
+ .../main/kotlin/okhttp3/sse/EventSource.kt    | 39 +++++++++++++++++++
+ .../main/kotlin/okhttp3/sse/EventSources.kt   | 37 +++++++++++-------
+ .../okhttp3/sse/internal/RealEventSource.kt   | 17 ++++----
+ .../sse/internal/EventSourceHttpTest.kt       |  4 +-
+ .../sse/internal/EventSourcesHttpTest.kt      |  6 +--
+ 6 files changed, 88 insertions(+), 29 deletions(-)
+
+diff --git a/okhttp-sse/api/okhttp-sse.api b/okhttp-sse/api/okhttp-sse.api
+index d1baa0735188..de2b777cb577 100644
+--- a/okhttp-sse/api/okhttp-sse.api
++++ b/okhttp-sse/api/okhttp-sse.api
+@@ -1,12 +1,26 @@
+ public abstract interface class okhttp3/sse/EventSource {
++	public static final field Companion Lokhttp3/sse/EventSource$Companion;
+ 	public abstract fun cancel ()V
++	public static fun create (Lokhttp3/Call;Lokhttp3/sse/EventSourceListener;)Lokhttp3/sse/EventSource;
++	public static fun create (Lokhttp3/Response;Lokhttp3/sse/EventSourceListener;)Lokhttp3/sse/EventSource;
+ 	public abstract fun request ()Lokhttp3/Request;
+ }
+ 
++public final class okhttp3/sse/EventSource$Companion {
++	public final fun create (Lokhttp3/Call;Lokhttp3/sse/EventSourceListener;)Lokhttp3/sse/EventSource;
++	public final fun create (Lokhttp3/Response;Lokhttp3/sse/EventSourceListener;)Lokhttp3/sse/EventSource;
++}
++
+ public abstract interface class okhttp3/sse/EventSource$Factory {
++	public static final field Companion Lokhttp3/sse/EventSource$Factory$Companion;
++	public static fun create (Lokhttp3/Call$Factory;)Lokhttp3/sse/EventSource$Factory;
+ 	public abstract fun newEventSource (Lokhttp3/Request;Lokhttp3/sse/EventSourceListener;)Lokhttp3/sse/EventSource;
+ }
+ 
++public final class okhttp3/sse/EventSource$Factory$Companion {
++	public final fun create (Lokhttp3/Call$Factory;)Lokhttp3/sse/EventSource$Factory;
++}
++
+ public abstract class okhttp3/sse/EventSourceListener {
+ 	public fun <init> ()V
+ 	public fun onClosed (Lokhttp3/sse/EventSource;)V
+diff --git a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt
+index 8235f17b0843..3d8a85e23ec0 100644
+--- a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt
++++ b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt
+@@ -15,7 +15,10 @@
+  */
+ package okhttp3.sse
+ 
++import okhttp3.Call
+ import okhttp3.Request
++import okhttp3.Response
++import okhttp3.sse.internal.RealEventSource
+ 
+ interface EventSource {
+   /** Returns the original request that initiated this event source. */
+@@ -37,5 +40,41 @@ interface EventSource {
+       request: Request,
+       listener: EventSourceListener,
+     ): EventSource
++
++    companion object {
++      @JvmStatic
++      @JvmName("create")
++      fun Call.Factory.asEventSourceFactory(): Factory =
++        Factory { request, listener ->
++          val actualRequest =
++            if (request.header("Accept") == null) {
++              request.newBuilder().addHeader("Accept", "text/event-stream").build()
++            } else {
++              request
++            }
++
++          this.newCall(actualRequest).toEventSource(listener)
++        }
++    }
++  }
++
++  companion object {
++    /**
++     * Creates a new [EventSource] from the [Call] and immediately enqueue it.
++     */
++    @JvmStatic
++    @JvmName("create")
++    fun Call.toEventSource(listener: EventSourceListener): EventSource {
++      return RealEventSource(this, listener).also(this::enqueue)
++    }
++
++    /**
++     * Creates a new [EventSource] from the [Response].
++     */
++    @JvmStatic
++    @JvmName("create")
++    fun Response.toEventSource(listener: EventSourceListener): EventSource {
++      return RealEventSource(this, listener)
++    }
+   }
+ }
+diff --git a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt
+index 0725aab820ff..aff37d96dcc1 100644
+--- a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt
++++ b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt
+@@ -18,6 +18,7 @@ package okhttp3.sse
+ import okhttp3.Call
+ import okhttp3.OkHttpClient
+ import okhttp3.Response
++import okhttp3.sse.EventSource.Factory.Companion.asEventSourceFactory
+ import okhttp3.sse.internal.RealEventSource
+ 
+ object EventSources {
+@@ -26,29 +27,35 @@ object EventSources {
+     level = DeprecationLevel.HIDDEN,
+   )
+   @JvmStatic
+-  fun createFactory(client: OkHttpClient) = createFactory(client as Call.Factory)
++  fun createFactory(client: OkHttpClient) = client.asEventSourceFactory()
+ 
++  @Deprecated(
++    message = "Moved to extension function.",
++    replaceWith =
++      ReplaceWith(
++        expression = "callFactory.asEventSourceFactory()",
++        imports = ["okhttp3.sse.EventSource.Factory.Companion.asEventSourceFactory"],
++      ),
++    level = DeprecationLevel.WARNING,
++  )
+   @JvmStatic
+   fun createFactory(callFactory: Call.Factory): EventSource.Factory =
+-    EventSource.Factory { request, listener ->
+-      val actualRequest =
+-        if (request.header("Accept") == null) {
+-          request.newBuilder().addHeader("Accept", "text/event-stream").build()
+-        } else {
+-          request
+-        }
+-
+-      RealEventSource(actualRequest, listener).apply {
+-        connect(callFactory)
+-      }
+-    }
++    callFactory.asEventSourceFactory()
+ 
++  @Deprecated(
++    message = "Moved to extension function.",
++    replaceWith =
++      ReplaceWith(
++        expression = "response.toEventSource(listener)",
++        imports = ["okhttp3.sse.EventSource.Companion.toEventSource"],
++      ),
++    level = DeprecationLevel.WARNING,
++  )
+   @JvmStatic
+   fun processResponse(
+     response: Response,
+     listener: EventSourceListener,
+   ) {
+-    val eventSource = RealEventSource(response.request, listener)
+-    eventSource.processResponse(response)
++    RealEventSource(response, listener)
+   }
+ }
+diff --git a/okhttp-sse/src/main/kotlin/okhttp3/sse/internal/RealEventSource.kt b/okhttp-sse/src/main/kotlin/okhttp3/sse/internal/RealEventSource.kt
+index 864eb19b66da..d5f264235484 100644
+--- a/okhttp-sse/src/main/kotlin/okhttp3/sse/internal/RealEventSource.kt
++++ b/okhttp-sse/src/main/kotlin/okhttp3/sse/internal/RealEventSource.kt
+@@ -25,23 +25,22 @@ import okhttp3.internal.stripBody
+ import okhttp3.sse.EventSource
+ import okhttp3.sse.EventSourceListener
+ 
+-internal class RealEventSource(
++internal class RealEventSource private constructor(
++  private val call: Call?,
+   private val request: Request,
+   private val listener: EventSourceListener,
+ ) : EventSource,
+   ServerSentEventReader.Callback,
+   Callback {
+-  private var call: Call? = null
+ 
+-  @Volatile private var canceled = false
++  constructor(call: Call, listener: EventSourceListener) : this(call, call.request(), listener)
+ 
+-  fun connect(callFactory: Call.Factory) {
+-    call =
+-      callFactory.newCall(request).apply {
+-        enqueue(this@RealEventSource)
+-      }
++  constructor(response: Response, listener: EventSourceListener) : this(null, response.request, listener) {
++    this.processResponse(response)
+   }
+ 
++  @Volatile private var canceled = false
++
+   override fun onResponse(
+     call: Call,
+     response: Response,
+@@ -49,7 +48,7 @@ internal class RealEventSource(
+     processResponse(response)
+   }
+ 
+-  fun processResponse(response: Response) {
++  private fun processResponse(response: Response) {
+     response.use {
+       if (!response.isSuccessful) {
+         listener.onFailure(this, null, response)
+diff --git a/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourceHttpTest.kt b/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourceHttpTest.kt
+index 75d2e67753e8..57499fc7a584 100644
+--- a/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourceHttpTest.kt
++++ b/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourceHttpTest.kt
+@@ -26,7 +26,7 @@ import okhttp3.OkHttpClientTestRule
+ import okhttp3.RecordingEventListener
+ import okhttp3.Request
+ import okhttp3.sse.EventSource
+-import okhttp3.sse.EventSources.createFactory
++import okhttp3.sse.EventSource.Factory.Companion.asEventSourceFactory
+ import okhttp3.testing.PlatformRule
+ import org.junit.jupiter.api.AfterEach
+ import org.junit.jupiter.api.Tag
+@@ -268,7 +268,7 @@ class EventSourceHttpTest {
+       builder.header("Accept", accept)
+     }
+     val request = builder.build()
+-    val factory = createFactory(client)
++    val factory = client.asEventSourceFactory()
+     return factory.newEventSource(request, listener)
+   }
+ }
+diff --git a/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourcesHttpTest.kt b/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourcesHttpTest.kt
+index 22573aed1711..40df5a2fef53 100644
+--- a/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourcesHttpTest.kt
++++ b/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourcesHttpTest.kt
+@@ -20,7 +20,7 @@ import mockwebserver3.MockWebServer
+ import mockwebserver3.junit5.StartStop
+ import okhttp3.OkHttpClientTestRule
+ import okhttp3.Request
+-import okhttp3.sse.EventSources.processResponse
++import okhttp3.sse.EventSource.Companion.toEventSource
+ import okhttp3.testing.PlatformRule
+ import org.junit.jupiter.api.AfterEach
+ import org.junit.jupiter.api.Tag
+@@ -66,7 +66,7 @@ class EventSourcesHttpTest {
+         .url(server.url("/"))
+         .build()
+     val response = client.newCall(request).execute()
+-    processResponse(response, listener)
++    response.toEventSource(listener)
+     listener.assertOpen()
+     listener.assertEvent(null, null, "hey")
+     listener.assertClose()
+@@ -93,7 +93,7 @@ class EventSourcesHttpTest {
+         .url(server.url("/"))
+         .build()
+     val response = client.newCall(request).execute()
+-    processResponse(response, listener)
++    response.toEventSource(listener)
+     listener.assertOpen()
+     listener.assertFailure("canceled")
+   }
+
+From 3cd0797502d4824bdc9ba45f388ef863f0262ed4 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E6=9C=A8=E8=91=89=20Scarlet?=
+ <93977077+mukjepscarlet@users.noreply.github.com>
+Date: Mon, 11 Aug 2025 23:51:00 +0800
+Subject: [PATCH 2/9] comments
+
+---
+ okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt     | 6 +++++-
+ .../src/main/kotlin/okhttp3/sse/EventSourceListener.kt    | 8 ++++++--
+ 2 files changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt
+index 3d8a85e23ec0..aefb6c00215a 100644
+--- a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt
++++ b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt
+@@ -42,6 +42,10 @@ interface EventSource {
+     ): EventSource
+ 
+     companion object {
++
++      /**
++       * Wraps a [Call.Factory] into [EventSource.Factory].
++       */
+       @JvmStatic
+       @JvmName("create")
+       fun Call.Factory.asEventSourceFactory(): Factory =
+@@ -69,7 +73,7 @@ interface EventSource {
+     }
+ 
+     /**
+-     * Creates a new [EventSource] from the [Response].
++     * Creates a new [EventSource] from the existing [Response].
+      */
+     @JvmStatic
+     @JvmName("create")
+diff --git a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSourceListener.kt b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSourceListener.kt
+index 8c595b178f4f..1693a3bfe94d 100644
+--- a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSourceListener.kt
++++ b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSourceListener.kt
+@@ -29,7 +29,11 @@ abstract class EventSourceListener {
+   }
+ 
+   /**
+-   * TODO description.
++   * Invoked when a new event has been sent to the client.
++   *
++   * @param id The `id` line of the event, might be null.
++   * @param type The `event` line of the event, might be null.
++   * @param data The `data` line of the event.
+    */
+   open fun onEvent(
+     eventSource: EventSource,
+@@ -40,7 +44,7 @@ abstract class EventSourceListener {
+   }
+ 
+   /**
+-   * TODO description.
++   * Invoked when the HTTP connection has been closed normally.
+    *
+    * No further calls to this listener will be made.
+    */
+
+From 333112d7e23daa3ca65f26661e5d7448bfb50657 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E6=9C=A8=E8=91=89=20Scarlet?=
+ <93977077+mukjepscarlet@users.noreply.github.com>
+Date: Sat, 16 Aug 2025 20:25:48 +0800
+Subject: [PATCH 3/9] redirect to new function
+
+---
+ okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt
+index aff37d96dcc1..48886e6ef7b7 100644
+--- a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt
++++ b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt
+@@ -18,8 +18,8 @@ package okhttp3.sse
+ import okhttp3.Call
+ import okhttp3.OkHttpClient
+ import okhttp3.Response
++import okhttp3.sse.EventSource.Companion.toEventSource
+ import okhttp3.sse.EventSource.Factory.Companion.asEventSourceFactory
+-import okhttp3.sse.internal.RealEventSource
+ 
+ object EventSources {
+   @Deprecated(
+@@ -56,6 +56,6 @@ object EventSources {
+     response: Response,
+     listener: EventSourceListener,
+   ) {
+-    RealEventSource(response, listener)
++    response.toEventSource(listener)
+   }
+ }
+
+From 8ebd9c81937b7f1ab46c1c30b50c76c670786ef7 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E6=9C=A8=E8=91=89=20Scarlet?=
+ <93977077+mukjepscarlet@users.noreply.github.com>
+Date: Sat, 16 Aug 2025 20:34:19 +0800
+Subject: [PATCH 4/9] a simple test (in java)
+
+---
+ .../sse/internal/EventSourceFactoryTest.java  | 57 +++++++++++++++++++
+ 1 file changed, 57 insertions(+)
+ create mode 100644 okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourceFactoryTest.java
+
+diff --git a/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourceFactoryTest.java b/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourceFactoryTest.java
+new file mode 100644
+index 000000000000..a87a05fce888
+--- /dev/null
++++ b/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourceFactoryTest.java
+@@ -0,0 +1,57 @@
++/*
++ * Copyright (C) 2018 Square, Inc.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package okhttp3.sse.internal;
++
++import mockwebserver3.MockWebServer;
++import mockwebserver3.junit5.StartStop;
++import okhttp3.OkHttpClient;
++import okhttp3.Request;
++import okhttp3.Response;
++import okhttp3.sse.EventSource;
++import okhttp3.sse.EventSourceListener;
++import org.jetbrains.annotations.NotNull;
++import org.junit.jupiter.api.Test;
++
++import java.util.concurrent.CompletableFuture;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++
++public class EventSourceFactoryTest {
++
++  @StartStop
++  private final MockWebServer server = new MockWebServer();
++
++  @Test
++  public void testEventSourceFactory() throws Exception {
++    OkHttpClient client = new OkHttpClient();
++    EventSource.Factory factory = EventSource.Factory.create(client);
++    Request request = new Request.Builder().url(server.url("/")).build();
++    CompletableFuture<Void> future = new CompletableFuture<>();
++    factory.newEventSource(request, new EventSourceListener() {
++      @Override
++      public void onOpen(@NotNull EventSource eventSource, @NotNull Response response) {
++        try {
++          assertEquals("text/event-stream", response.request().header("Accept"));
++          future.complete(null);
++        } catch (Exception e) {
++          future.completeExceptionally(e);
++        }
++      }
++    });
++    future.get();
++  }
++
++}
+
+From 914ce4aee680c0f0a156898a285ebb24f601f087 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E6=9C=A8=E8=91=89=20Scarlet?=
+ <93977077+mukjepscarlet@users.noreply.github.com>
+Date: Sat, 16 Aug 2025 20:38:42 +0800
+Subject: [PATCH 5/9] spotlessApply
+
+---
+ okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt    | 9 ++-------
+ okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt   | 3 +--
+ .../main/kotlin/okhttp3/sse/internal/RealEventSource.kt  | 1 -
+ 3 files changed, 3 insertions(+), 10 deletions(-)
+
+diff --git a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt
+index aefb6c00215a..a4cdfef4e059 100644
+--- a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt
++++ b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt
+@@ -42,7 +42,6 @@ interface EventSource {
+     ): EventSource
+ 
+     companion object {
+-
+       /**
+        * Wraps a [Call.Factory] into [EventSource.Factory].
+        */
+@@ -68,17 +67,13 @@ interface EventSource {
+      */
+     @JvmStatic
+     @JvmName("create")
+-    fun Call.toEventSource(listener: EventSourceListener): EventSource {
+-      return RealEventSource(this, listener).also(this::enqueue)
+-    }
++    fun Call.toEventSource(listener: EventSourceListener): EventSource = RealEventSource(this, listener).also(this::enqueue)
+ 
+     /**
+      * Creates a new [EventSource] from the existing [Response].
+      */
+     @JvmStatic
+     @JvmName("create")
+-    fun Response.toEventSource(listener: EventSourceListener): EventSource {
+-      return RealEventSource(this, listener)
+-    }
++    fun Response.toEventSource(listener: EventSourceListener): EventSource = RealEventSource(this, listener)
+   }
+ }
+diff --git a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt
+index 48886e6ef7b7..211f82068244 100644
+--- a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt
++++ b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt
+@@ -39,8 +39,7 @@ object EventSources {
+     level = DeprecationLevel.WARNING,
+   )
+   @JvmStatic
+-  fun createFactory(callFactory: Call.Factory): EventSource.Factory =
+-    callFactory.asEventSourceFactory()
++  fun createFactory(callFactory: Call.Factory): EventSource.Factory = callFactory.asEventSourceFactory()
+ 
+   @Deprecated(
+     message = "Moved to extension function.",
+diff --git a/okhttp-sse/src/main/kotlin/okhttp3/sse/internal/RealEventSource.kt b/okhttp-sse/src/main/kotlin/okhttp3/sse/internal/RealEventSource.kt
+index d5f264235484..253899cece15 100644
+--- a/okhttp-sse/src/main/kotlin/okhttp3/sse/internal/RealEventSource.kt
++++ b/okhttp-sse/src/main/kotlin/okhttp3/sse/internal/RealEventSource.kt
+@@ -32,7 +32,6 @@ internal class RealEventSource private constructor(
+ ) : EventSource,
+   ServerSentEventReader.Callback,
+   Callback {
+-
+   constructor(call: Call, listener: EventSourceListener) : this(call, call.request(), listener)
+ 
+   constructor(response: Response, listener: EventSourceListener) : this(null, response.request, listener) {
+
+From bd3395f24d791f755a09e0dcf90c4b83772c563b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E6=9C=A8=E8=91=89=20Scarlet?=
+ <93977077+mukjepscarlet@users.noreply.github.com>
+Date: Sat, 16 Aug 2025 20:47:37 +0800
+Subject: [PATCH 6/9] fix java test
+
+---
+ .../sse/internal/EventSourceFactoryTest.java  | 27 +++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+diff --git a/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourceFactoryTest.java b/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourceFactoryTest.java
+index a87a05fce888..7fd51be47d06 100644
+--- a/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourceFactoryTest.java
++++ b/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourceFactoryTest.java
+@@ -15,6 +15,7 @@
+  */
+ package okhttp3.sse.internal;
+ 
++import mockwebserver3.MockResponse;
+ import mockwebserver3.MockWebServer;
+ import mockwebserver3.junit5.StartStop;
+ import okhttp3.OkHttpClient;
+@@ -23,6 +24,7 @@
+ import okhttp3.sse.EventSource;
+ import okhttp3.sse.EventSourceListener;
+ import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
+ import org.junit.jupiter.api.Test;
+ 
+ import java.util.concurrent.CompletableFuture;
+@@ -38,6 +40,12 @@ public class EventSourceFactoryTest {
+   public void testEventSourceFactory() throws Exception {
+     OkHttpClient client = new OkHttpClient();
+     EventSource.Factory factory = EventSource.Factory.create(client);
++    server.enqueue(
++      new MockResponse.Builder()
++        .body("data: hello\n\n")
++        .setHeader("content-type", "text/event-stream")
++        .build()
++    );
+     Request request = new Request.Builder().url(server.url("/")).build();
+     CompletableFuture<Void> future = new CompletableFuture<>();
+     factory.newEventSource(request, new EventSourceListener() {
+@@ -45,11 +53,30 @@ public void testEventSourceFactory() throws Exception {
+       public void onOpen(@NotNull EventSource eventSource, @NotNull Response response) {
+         try {
+           assertEquals("text/event-stream", response.request().header("Accept"));
++        } catch (Exception e) {
++          future.completeExceptionally(e);
++        }
++      }
++
++      @Override
++      public void onEvent(@NotNull EventSource eventSource, @Nullable String id, @Nullable String type, @NotNull String data) {
++        try {
++          assertEquals("hello", data);
+           future.complete(null);
+         } catch (Exception e) {
+           future.completeExceptionally(e);
+         }
+       }
++
++      @Override
++      public void onClosed(@NotNull EventSource eventSource) {
++        future.completeExceptionally(new IllegalStateException("closed"));
++      }
++
++      @Override
++      public void onFailure(@NotNull EventSource eventSource, @Nullable Throwable t, @Nullable Response response) {
++        future.completeExceptionally(t == null ? new NullPointerException() : t);
++      }
+     });
+     future.get();
+   }
+
+From 1347c0854d2187caa24c1bcf194e93776e48fad5 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E6=9C=A8=E8=91=89=20Scarlet?=
+ <93977077+mukjepscarlet@users.noreply.github.com>
+Date: Sun, 17 Aug 2025 02:02:02 +0800
+Subject: [PATCH 7/9] rename function for Response
+
+---
+ okhttp-sse/api/okhttp-sse.api                               | 4 ++--
+ okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt       | 6 +++---
+ okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt      | 6 ++----
+ .../src/main/kotlin/okhttp3/sse/internal/RealEventSource.kt | 6 ++----
+ .../test/java/okhttp3/sse/internal/EventSourcesHttpTest.kt  | 6 +++---
+ 5 files changed, 12 insertions(+), 16 deletions(-)
+
+diff --git a/okhttp-sse/api/okhttp-sse.api b/okhttp-sse/api/okhttp-sse.api
+index de2b777cb577..5e0aba3a7e5e 100644
+--- a/okhttp-sse/api/okhttp-sse.api
++++ b/okhttp-sse/api/okhttp-sse.api
+@@ -2,13 +2,13 @@ public abstract interface class okhttp3/sse/EventSource {
+ 	public static final field Companion Lokhttp3/sse/EventSource$Companion;
+ 	public abstract fun cancel ()V
+ 	public static fun create (Lokhttp3/Call;Lokhttp3/sse/EventSourceListener;)Lokhttp3/sse/EventSource;
+-	public static fun create (Lokhttp3/Response;Lokhttp3/sse/EventSourceListener;)Lokhttp3/sse/EventSource;
++	public static fun process (Lokhttp3/Response;Lokhttp3/sse/EventSourceListener;)V
+ 	public abstract fun request ()Lokhttp3/Request;
+ }
+ 
+ public final class okhttp3/sse/EventSource$Companion {
+ 	public final fun create (Lokhttp3/Call;Lokhttp3/sse/EventSourceListener;)Lokhttp3/sse/EventSource;
+-	public final fun create (Lokhttp3/Response;Lokhttp3/sse/EventSourceListener;)Lokhttp3/sse/EventSource;
++	public final fun process (Lokhttp3/Response;Lokhttp3/sse/EventSourceListener;)V
+ }
+ 
+ public abstract interface class okhttp3/sse/EventSource$Factory {
+diff --git a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt
+index a4cdfef4e059..2788a7b2b3ff 100644
+--- a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt
++++ b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt
+@@ -70,10 +70,10 @@ interface EventSource {
+     fun Call.toEventSource(listener: EventSourceListener): EventSource = RealEventSource(this, listener).also(this::enqueue)
+ 
+     /**
+-     * Creates a new [EventSource] from the existing [Response].
++     * Processes the existing response with [listener].
+      */
+     @JvmStatic
+-    @JvmName("create")
+-    fun Response.toEventSource(listener: EventSourceListener): EventSource = RealEventSource(this, listener)
++    @JvmName("process")
++    fun Response.processAsEventSource(listener: EventSourceListener) = RealEventSource(this, listener).processResponse(this)
+   }
+ }
+diff --git a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt
+index 211f82068244..de5b7579faa0 100644
+--- a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt
++++ b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt
+@@ -18,7 +18,7 @@ package okhttp3.sse
+ import okhttp3.Call
+ import okhttp3.OkHttpClient
+ import okhttp3.Response
+-import okhttp3.sse.EventSource.Companion.toEventSource
++import okhttp3.sse.EventSource.Companion.processAsEventSource
+ import okhttp3.sse.EventSource.Factory.Companion.asEventSourceFactory
+ 
+ object EventSources {
+@@ -54,7 +54,5 @@ object EventSources {
+   fun processResponse(
+     response: Response,
+     listener: EventSourceListener,
+-  ) {
+-    response.toEventSource(listener)
+-  }
++  ): Unit = response.processAsEventSource(listener)
+ }
+diff --git a/okhttp-sse/src/main/kotlin/okhttp3/sse/internal/RealEventSource.kt b/okhttp-sse/src/main/kotlin/okhttp3/sse/internal/RealEventSource.kt
+index 253899cece15..3611fed83e7f 100644
+--- a/okhttp-sse/src/main/kotlin/okhttp3/sse/internal/RealEventSource.kt
++++ b/okhttp-sse/src/main/kotlin/okhttp3/sse/internal/RealEventSource.kt
+@@ -34,9 +34,7 @@ internal class RealEventSource private constructor(
+   Callback {
+   constructor(call: Call, listener: EventSourceListener) : this(call, call.request(), listener)
+ 
+-  constructor(response: Response, listener: EventSourceListener) : this(null, response.request, listener) {
+-    this.processResponse(response)
+-  }
++  constructor(response: Response, listener: EventSourceListener) : this(null, response.request, listener)
+ 
+   @Volatile private var canceled = false
+ 
+@@ -47,7 +45,7 @@ internal class RealEventSource private constructor(
+     processResponse(response)
+   }
+ 
+-  private fun processResponse(response: Response) {
++  internal fun processResponse(response: Response) {
+     response.use {
+       if (!response.isSuccessful) {
+         listener.onFailure(this, null, response)
+diff --git a/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourcesHttpTest.kt b/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourcesHttpTest.kt
+index 40df5a2fef53..18b2619bcc4d 100644
+--- a/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourcesHttpTest.kt
++++ b/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourcesHttpTest.kt
+@@ -20,7 +20,7 @@ import mockwebserver3.MockWebServer
+ import mockwebserver3.junit5.StartStop
+ import okhttp3.OkHttpClientTestRule
+ import okhttp3.Request
+-import okhttp3.sse.EventSource.Companion.toEventSource
++import okhttp3.sse.EventSource.Companion.processAsEventSource
+ import okhttp3.testing.PlatformRule
+ import org.junit.jupiter.api.AfterEach
+ import org.junit.jupiter.api.Tag
+@@ -66,7 +66,7 @@ class EventSourcesHttpTest {
+         .url(server.url("/"))
+         .build()
+     val response = client.newCall(request).execute()
+-    response.toEventSource(listener)
++    response.processAsEventSource(listener)
+     listener.assertOpen()
+     listener.assertEvent(null, null, "hey")
+     listener.assertClose()
+@@ -93,7 +93,7 @@ class EventSourcesHttpTest {
+         .url(server.url("/"))
+         .build()
+     val response = client.newCall(request).execute()
+-    response.toEventSource(listener)
++    response.processAsEventSource(listener)
+     listener.assertOpen()
+     listener.assertFailure("canceled")
+   }
+
+From b3e7a988f565f97e1eb2969f500d84c26aa43ef0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E6=9C=A8=E8=91=89=20Scarlet?=
+ <93977077+mukjepscarlet@users.noreply.github.com>
+Date: Tue, 19 Aug 2025 20:47:47 +0800
+Subject: [PATCH 8/9] rename
+
+---
+ okhttp-sse/api/okhttp-sse.api                          |  4 ++--
+ okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt  | 10 +++++-----
+ okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt |  8 ++++----
+ .../java/okhttp3/sse/internal/EventSourcesHttpTest.kt  |  6 +++---
+ 4 files changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/okhttp-sse/api/okhttp-sse.api b/okhttp-sse/api/okhttp-sse.api
+index 5e0aba3a7e5e..dbe1dae6fdee 100644
+--- a/okhttp-sse/api/okhttp-sse.api
++++ b/okhttp-sse/api/okhttp-sse.api
+@@ -1,13 +1,13 @@
+ public abstract interface class okhttp3/sse/EventSource {
+ 	public static final field Companion Lokhttp3/sse/EventSource$Companion;
+ 	public abstract fun cancel ()V
+-	public static fun create (Lokhttp3/Call;Lokhttp3/sse/EventSourceListener;)Lokhttp3/sse/EventSource;
++	public static fun enqueue (Lokhttp3/Call;Lokhttp3/sse/EventSourceListener;)Lokhttp3/sse/EventSource;
+ 	public static fun process (Lokhttp3/Response;Lokhttp3/sse/EventSourceListener;)V
+ 	public abstract fun request ()Lokhttp3/Request;
+ }
+ 
+ public final class okhttp3/sse/EventSource$Companion {
+-	public final fun create (Lokhttp3/Call;Lokhttp3/sse/EventSourceListener;)Lokhttp3/sse/EventSource;
++	public final fun enqueue (Lokhttp3/Call;Lokhttp3/sse/EventSourceListener;)Lokhttp3/sse/EventSource;
+ 	public final fun process (Lokhttp3/Response;Lokhttp3/sse/EventSourceListener;)V
+ }
+ 
+diff --git a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt
+index 2788a7b2b3ff..06ddc37abf81 100644
+--- a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt
++++ b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt
+@@ -56,24 +56,24 @@ interface EventSource {
+               request
+             }
+ 
+-          this.newCall(actualRequest).toEventSource(listener)
++          this.newCall(actualRequest).enqueueEventSource(listener)
+         }
+     }
+   }
+ 
+   companion object {
+     /**
+-     * Creates a new [EventSource] from the [Call] and immediately enqueue it.
++     * Enqueues a [Call] and process it as [EventSource] with [listener].
+      */
+     @JvmStatic
+-    @JvmName("create")
+-    fun Call.toEventSource(listener: EventSourceListener): EventSource = RealEventSource(this, listener).also(this::enqueue)
++    @JvmName("enqueue")
++    fun Call.enqueueEventSource(listener: EventSourceListener): EventSource = RealEventSource(this, listener).also(this::enqueue)
+ 
+     /**
+      * Processes the existing response with [listener].
+      */
+     @JvmStatic
+     @JvmName("process")
+-    fun Response.processAsEventSource(listener: EventSourceListener) = RealEventSource(this, listener).processResponse(this)
++    fun Response.processEventSource(listener: EventSourceListener) = RealEventSource(this, listener).processResponse(this)
+   }
+ }
+diff --git a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt
+index de5b7579faa0..90c01842806c 100644
+--- a/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt
++++ b/okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt
+@@ -18,7 +18,7 @@ package okhttp3.sse
+ import okhttp3.Call
+ import okhttp3.OkHttpClient
+ import okhttp3.Response
+-import okhttp3.sse.EventSource.Companion.processAsEventSource
++import okhttp3.sse.EventSource.Companion.processEventSource
+ import okhttp3.sse.EventSource.Factory.Companion.asEventSourceFactory
+ 
+ object EventSources {
+@@ -45,8 +45,8 @@ object EventSources {
+     message = "Moved to extension function.",
+     replaceWith =
+       ReplaceWith(
+-        expression = "response.toEventSource(listener)",
+-        imports = ["okhttp3.sse.EventSource.Companion.toEventSource"],
++        expression = "response.processEventSource(listener)",
++        imports = ["okhttp3.sse.EventSource.Companion.processEventSource"],
+       ),
+     level = DeprecationLevel.WARNING,
+   )
+@@ -54,5 +54,5 @@ object EventSources {
+   fun processResponse(
+     response: Response,
+     listener: EventSourceListener,
+-  ): Unit = response.processAsEventSource(listener)
++  ): Unit = response.processEventSource(listener)
+ }
+diff --git a/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourcesHttpTest.kt b/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourcesHttpTest.kt
+index 18b2619bcc4d..fe85623590f4 100644
+--- a/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourcesHttpTest.kt
++++ b/okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourcesHttpTest.kt
+@@ -20,7 +20,7 @@ import mockwebserver3.MockWebServer
+ import mockwebserver3.junit5.StartStop
+ import okhttp3.OkHttpClientTestRule
+ import okhttp3.Request
+-import okhttp3.sse.EventSource.Companion.processAsEventSource
++import okhttp3.sse.EventSource.Companion.processEventSource
+ import okhttp3.testing.PlatformRule
+ import org.junit.jupiter.api.AfterEach
+ import org.junit.jupiter.api.Tag
+@@ -66,7 +66,7 @@ class EventSourcesHttpTest {
+         .url(server.url("/"))
+         .build()
+     val response = client.newCall(request).execute()
+-    response.processAsEventSource(listener)
++    response.processEventSource(listener)
+     listener.assertOpen()
+     listener.assertEvent(null, null, "hey")
+     listener.assertClose()
+@@ -93,7 +93,7 @@ class EventSourcesHttpTest {
+         .url(server.url("/"))
+         .build()
+     val response = client.newCall(request).execute()
+-    response.processAsEventSource(listener)
++    response.processEventSource(listener)
+     listener.assertOpen()
+     listener.assertFailure("canceled")
+   }
+
+From 1bcd168e0776ab8f442de53220384e1166f63c80 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E6=9C=A8=E8=91=89=20Scarlet?=
+ <93977077+mukjepscarlet@users.noreply.github.com>
+Date: Tue, 19 Aug 2025 20:57:08 +0800
+Subject: [PATCH 9/9] restrictive access
+
+---
+ .../main/kotlin/okhttp3/sse/internal/ServerSentEventReader.kt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/okhttp-sse/src/main/kotlin/okhttp3/sse/internal/ServerSentEventReader.kt b/okhttp-sse/src/main/kotlin/okhttp3/sse/internal/ServerSentEventReader.kt
+index c4933eb23378..a2a3fbb03540 100644
+--- a/okhttp-sse/src/main/kotlin/okhttp3/sse/internal/ServerSentEventReader.kt
++++ b/okhttp-sse/src/main/kotlin/okhttp3/sse/internal/ServerSentEventReader.kt
+@@ -22,7 +22,7 @@ import okio.BufferedSource
+ import okio.ByteString.Companion.encodeUtf8
+ import okio.Options
+ 
+-class ServerSentEventReader(
++internal class ServerSentEventReader(
+   private val source: BufferedSource,
+   private val callback: Callback,
+ ) {
+@@ -119,7 +119,7 @@ class ServerSentEventReader(
+   }
+ 
+   companion object {
+-    val options =
++    private val options =
+       Options.of(
+         // 0
+         "\r\n".encodeUtf8(),

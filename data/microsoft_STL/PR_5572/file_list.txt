@@ -1,3 +1,0 @@
-stl/inc/xutility
-tests/libcxx/expected_results.txt
-tests/std/tests/P0896R4_ranges_iterator_machinery/test.cpp

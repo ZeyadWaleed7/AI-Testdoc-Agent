@@ -1,2 +1,0 @@
-packages/react-dom-bindings/src/shared/validAriaProperties.js
-packages/react-dom/src/__tests__/ReactDOMInvalidARIAHook-test.js

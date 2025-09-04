@@ -1,0 +1,6 @@
+{
+  "title": "refactor(SSE): move static functions to extensions",
+  "description": "Also added some comments for `TODO` blocks.\r\n\r\nfor https://github.com/square/retrofit/pull/4462",
+  "base_branch": "master",
+  "head_branch": "refactor_sse"
+}

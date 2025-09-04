@@ -1,3 +1,0 @@
-ggml/src/ggml-vulkan/ggml-vulkan.cpp
-ggml/src/ggml-vulkan/vulkan-shaders/argsort.comp
-tests/test-backend-ops.cpp
