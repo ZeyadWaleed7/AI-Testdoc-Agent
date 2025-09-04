@@ -1,0 +1,9 @@
+okhttp-sse/api/okhttp-sse.api
+okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt
+okhttp-sse/src/main/kotlin/okhttp3/sse/EventSourceListener.kt
+okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt
+okhttp-sse/src/main/kotlin/okhttp3/sse/internal/RealEventSource.kt
+okhttp-sse/src/main/kotlin/okhttp3/sse/internal/ServerSentEventReader.kt
+okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourceFactoryTest.java
+okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourceHttpTest.kt
+okhttp-sse/src/test/java/okhttp3/sse/internal/EventSourcesHttpTest.kt

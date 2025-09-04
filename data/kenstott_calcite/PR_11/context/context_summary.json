@@ -1,0 +1,46 @@
+{
+  "pr_title": "Feature/duckdb testing and fixes",
+  "total_files_changed": 18,
+  "languages": [
+    "java"
+  ],
+  "main_changes": [
+    {
+      "file": "file/src/main/java/org/apache/calcite/adapter/file/FileSchema.java",
+      "status": "modified",
+      "changes": 115,
+      "language": "java",
+      "is_test_file": false
+    },
+    {
+      "file": "file/src/main/java/org/apache/calcite/adapter/file/FileSchemaFactory.java",
+      "status": "modified",
+      "changes": 18,
+      "language": "java",
+      "is_test_file": false
+    },
+    {
+      "file": "file/src/main/java/org/apache/calcite/adapter/file/duckdb/DuckDBJdbcSchemaFactory.java",
+      "status": "modified",
+      "changes": 190,
+      "language": "java",
+      "is_test_file": false
+    },
+    {
+      "file": "file/src/main/java/org/apache/calcite/adapter/file/metadata/ConversionMetadata.java",
+      "status": "modified",
+      "changes": 34,
+      "language": "java",
+      "is_test_file": false
+    },
+    {
+      "file": "file/src/main/java/org/apache/calcite/adapter/file/refresh/RefreshablePartitionedParquetTable.java",
+      "status": "modified",
+      "changes": 11,
+      "language": "java",
+      "is_test_file": false
+    }
+  ],
+  "existing_test_files": 12,
+  "test_files_saved": 12
+}

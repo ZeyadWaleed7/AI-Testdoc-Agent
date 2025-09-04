@@ -1,2 +1,0 @@
-ggml/src/gguf.cpp
-tests/test-gguf.cpp

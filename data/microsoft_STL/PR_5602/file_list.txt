@@ -1,2 +1,0 @@
-stl/inc/expected
-tests/std/tests/P0323R12_expected/test.cpp

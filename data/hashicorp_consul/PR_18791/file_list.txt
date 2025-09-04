@@ -1,4 +1,0 @@
-test/integration/consul-container/libs/service/common.go
-test/integration/consul-container/libs/service/examples.go
-test/integration/consul-container/test/gateways/gateway_endpoint_test.go
-test/integration/consul-container/test/gateways/http_route_test.go

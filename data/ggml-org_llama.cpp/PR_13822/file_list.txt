@@ -1,2 +1,0 @@
-src/llama-sampling.cpp
-tests/test-sampling.cpp

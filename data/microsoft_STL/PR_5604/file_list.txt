@@ -1,3 +1,0 @@
-stl/inc/istream
-stl/inc/yvals_core.h
-tests/std/tests/VSO_0000000_nullptr_stream_out/test.cpp

@@ -1,6 +1,0 @@
-googlemock/src/gmock-internal-utils.cc
-googletest/include/gtest/internal/gtest-internal.h
-googletest/src/gtest.cc
-googletest/test/googletest-param-test-test.cc
-googletest/test/gtest-unittest-api_test.cc
-googletest/test/gtest_unittest.cc

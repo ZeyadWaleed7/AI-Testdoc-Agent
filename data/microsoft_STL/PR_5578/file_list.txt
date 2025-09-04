@@ -1,5 +1,0 @@
-stl/inc/execution
-tests/std/test.lst
-tests/std/tests/LWG2510_tag_classes/env.lst
-tests/std/tests/LWG2510_tag_classes/test.compile.pass.cpp
-tests/std/tests/VSO_0000000_more_pair_tuple_sfinae/test.cpp

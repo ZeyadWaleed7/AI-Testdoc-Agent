@@ -1,6 +1,0 @@
-{
-  "title": "sampling : make sure samplers return at least 1 token",
-  "description": "fix #13405 \r\n\r\nFixes `min-p` and `typical` samplers + adjust unit tests.",
-  "base_branch": "master",
-  "head_branch": "gg/min-p-fix"
-}

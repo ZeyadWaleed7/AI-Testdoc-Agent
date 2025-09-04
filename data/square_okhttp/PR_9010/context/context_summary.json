@@ -1,0 +1,48 @@
+{
+  "pr_title": "refactor(SSE): move static functions to extensions",
+  "total_files_changed": 9,
+  "languages": [
+    "unknown",
+    "java",
+    "kotlin"
+  ],
+  "main_changes": [
+    {
+      "file": "okhttp-sse/api/okhttp-sse.api",
+      "status": "modified",
+      "changes": 14,
+      "language": "unknown",
+      "is_test_file": false
+    },
+    {
+      "file": "okhttp-sse/src/main/kotlin/okhttp3/sse/EventSource.kt",
+      "status": "modified",
+      "changes": 38,
+      "language": "kotlin",
+      "is_test_file": false
+    },
+    {
+      "file": "okhttp-sse/src/main/kotlin/okhttp3/sse/EventSourceListener.kt",
+      "status": "modified",
+      "changes": 8,
+      "language": "kotlin",
+      "is_test_file": false
+    },
+    {
+      "file": "okhttp-sse/src/main/kotlin/okhttp3/sse/EventSources.kt",
+      "status": "modified",
+      "changes": 42,
+      "language": "kotlin",
+      "is_test_file": false
+    },
+    {
+      "file": "okhttp-sse/src/main/kotlin/okhttp3/sse/internal/RealEventSource.kt",
+      "status": "modified",
+      "changes": 16,
+      "language": "kotlin",
+      "is_test_file": false
+    }
+  ],
+  "existing_test_files": 3,
+  "test_files_saved": 3
+}

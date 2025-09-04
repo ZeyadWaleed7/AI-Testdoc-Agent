@@ -20,11 +20,11 @@ PATCH_HEADERS = {
 }
 
 REPOS = [
-    {"owner": "TheAlgorithms", "repo": "Java", "prs": [6504]},
+    {"owner": "square", "repo": "okhttp", "prs": [9010]},
 ]
 
 BASE_OUTPUT_PATH = "data"
-TEST_EXTENSIONS = [".py", ".cpp", ".c", ".js", ".ts", ".java", ".rb",".go"]
+TEST_EXTENSIONS = [".py", ".cpp", ".c", ".js", ".ts", ".java", ".rb", ".go", ".kt", ".kts"]
 TEST_KEYWORDS = ["test", "spec", "Test", "_test"]
 
 def get_language_from_extension(filename):
